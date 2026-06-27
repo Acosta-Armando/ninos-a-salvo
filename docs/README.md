@@ -15,6 +15,7 @@
 | Flujo | Ruta principal | Documento |
 |-------|----------------|-------------|
 | Inicio e instalación PWA | `/` | [PWA](./flujos/pwa-instalacion.md) |
+| Conexión, offline y navegación | Global | [Conexión y offline](./flujos/conexion-y-offline.md) |
 | Registro offline de un niño | `/registro` | [Registro y sincronización](./flujos/registro-y-sincronizacion.md) |
 | Tablero (niños con vida) | `/tablero` | [Tablero y búsqueda](./flujos/tablero.md) |
 | Registro de fallecidos | `/fallecidos` | [Fallecidos](./flujos/fallecidos.md) |
@@ -27,3 +28,13 @@
 |--------|------|-----|
 | `POST` | `/api/ninos` | Upsert desde sincronización offline |
 | `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega del niño a su familia |
+
+## Resumen offline
+
+| Ruta | Offline |
+|------|---------|
+| `/` | Sí |
+| `/registro` | Sí (Dexie + foto local) |
+| `/tablero`, `/fallecidos`, `/ninos/[id]` | No |
+
+Al recuperar internet, `SyncProvider` sube fotos pendientes a Storage y sincroniza con `POST /api/ninos`. La barra superior muestra cuántos registros faltan por sincronizar mientras no hay red.

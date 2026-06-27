@@ -8,6 +8,7 @@ import { OfflinePrecache } from "@/components/OfflinePrecache";
 import { ThemeProvider, THEME_COOKIE } from "@/components/ThemeProvider";
 import { PwaInstallProvider } from "@/components/PwaInstallProvider";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SyncProvider } from "@/components/SyncProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -59,7 +60,8 @@ export default async function RootLayout({
       <body className="flex min-h-full flex-col font-sans">
         <ThemeProvider defaultTheme={theme}>
           <PwaInstallProvider>
-            <OfflineNavProvider>
+            <SyncProvider>
+              <OfflineNavProvider>
               <div className="sticky top-0 z-50">
                 <ConnectionStatusBar />
                 <PendingSyncBar />
@@ -68,6 +70,7 @@ export default async function RootLayout({
               <div className="flex min-h-full flex-1 flex-col">{children}</div>
               <SiteFooter />
             </OfflineNavProvider>
+            </SyncProvider>
           </PwaInstallProvider>
         </ThemeProvider>
       </body>

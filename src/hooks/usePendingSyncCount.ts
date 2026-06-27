@@ -1,5 +1,4 @@
 "use client";
-
 import { liveQuery } from "dexie";
 import { useEffect, useState } from "react";
 import { localDb } from "@/lib/db";

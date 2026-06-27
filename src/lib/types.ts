@@ -15,7 +15,11 @@ export interface LocalChild {
   ciudad: string;
   estado_resguardo: string;
   detalles_ubicacion: string;
+  /** Blob en memoria (legacy); preferir foto_data en IndexedDB. */
   foto_blob?: Blob;
+  /** Foto persistida offline como ArrayBuffer (más fiable en IndexedDB). */
+  foto_data?: ArrayBuffer;
+  foto_mime?: string;
   foto_url?: string;
   informante_nombre: string;
   informante_telefono: string;

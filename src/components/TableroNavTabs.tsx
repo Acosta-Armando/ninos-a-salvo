@@ -1,5 +1,4 @@
 "use client";
-
 import { OnlineOnlyButton } from "@/components/OnlineOnlyNav";
 
 interface TableroNavTabsProps {

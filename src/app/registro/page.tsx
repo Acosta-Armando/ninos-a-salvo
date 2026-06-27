@@ -1,6 +1,5 @@
 import { AppHeader } from "@/components/AppHeader";
 import { RegistroForm } from "@/components/RegistroForm";
-import { SyncProvider } from "@/components/SyncProvider";
 
 export const metadata = {
   title: "Registrar niño — Niños a Salvo",
@@ -17,9 +16,7 @@ export default function RegistroPage() {
         backLabel="← Inicio"
       />
       <main className="mx-auto max-w-2xl px-4 py-6">
-        <SyncProvider>
-          <RegistroForm />
-        </SyncProvider>
+        <RegistroForm />
       </main>
     </div>
   );

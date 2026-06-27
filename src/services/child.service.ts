@@ -60,7 +60,8 @@ export function assertValidChildPayload(body: ChildPayload): void {
     !body.estado ||
     !body.ciudad ||
     !body.estado_resguardo ||
-    !body.estado_vital
+    !body.estado_vital ||
+    !body.rasgos_particulares?.trim()
   ) {
     throw new InvalidChildPayloadError();
   }

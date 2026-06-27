@@ -1,7 +1,7 @@
 # Flujo: Tablero de niños con vida
 
 **Ruta:** `/tablero`  
-**Componentes:** `TableroPageContent`, `TableroFilters`, `ChildCard`  
+**Componentes:** `TableroPageContent`, `TableroFilters`, `TableroNavTabs`, `ChildCard`, `Pagination`  
 **Servicio:** `listTableroChildren`
 
 ## Criterios de listado
@@ -38,12 +38,18 @@ flowchart LR
 
 ## Tarjeta pública (`ChildCard`)
 
-Muestra: foto, edad estimada, ubicación, punto de resguardo, descripción breve, teléfono del informante.
+**Niños con vida** (`esFallecido={false}`):
+
+- Foto, edad estimada, ubicación, resguardo, descripción breve, teléfono del informante.
 
 **No muestra:** nombre del niño ni de familiares.
 
+Sin conexión: la tarjeta se ve atenuada; al pulsar, diálogo pidiendo reconectar (no navega a la ficha).
+
 ## Navegación relacionada
 
-- Pestaña **Fallecidos** → `/fallecidos`
-- **Registrar niño** → `/registro`
-- Clic en tarjeta → [Ficha pública](./ficha-publica.md)
+- Pestañas **Con vida** / **Fallecidos** (`TableroNavTabs`) — deshabilitadas offline hacia la otra lista si no hay red.
+- **Registrar niño** → `/registro` (disponible offline).
+- Clic en tarjeta → [Ficha pública](./ficha-publica.md) (requiere conexión).
+
+Ver también [Fallecidos](./fallecidos.md) para tarjetas sin fotografía.

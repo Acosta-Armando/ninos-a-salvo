@@ -5,17 +5,17 @@
 
 ## Acceso
 
-Desde una tarjeta del tablero o fallecidos. Requiere conexión (datos en servidor).
+Desde una tarjeta del tablero o fallecidos. Requiere conexión (datos en servidor). Sin red, los enlaces están deshabilitados con aviso (ver [Conexión y offline](./conexion-y-offline.md)).
 
 ## Información mostrada
 
-| Sección | Contenido |
-|---------|-----------|
-| Foto | Imagen del niño |
-| Edad | `edad_estimada` |
-| Rasgos | `rasgos_particulares` (si existe) |
-| Ubicación | Estado, municipio, punto de resguardo, descripción |
-| Contacto | Nombre y teléfono del informante (botón llamar) |
+| Sección | Con vida | Fallecido |
+|---------|----------|-----------|
+| Foto | Imagen del niño (o favicon si falta URL) | Recuadro negro con texto «Sin foto» en diagonal |
+| Edad | `edad_estimada` | Igual |
+| Rasgos | `rasgos_particulares` (obligatorio al registrar) | Igual |
+| Ubicación | Estado, municipio, resguardo, descripción | Igual |
+| Contacto | Informante + botón llamar | Igual |
 
 ## Si ya fue entregado (`Reencontrado`)
 
@@ -23,11 +23,13 @@ Banner verde con datos de quien retiró y las tres fotos del retiro. Ver [Retiro
 
 ## Si es fallecido
 
-Sin formulario de retiro. Botón volver → `/fallecidos`.
+- Sin formulario de retiro.
+- Botón volver → `/fallecidos`.
+- Sin fotografía del niño en la UI pública.
 
 ## Si está en búsqueda y con vida
 
-Muestra la ficha + formulario **Registrar retiro** al final.
+La ficha muestra los datos anteriores. El componente `RetiroForm` existe en el proyecto para el flujo de retiro; su visibilidad en la página depende de la implementación actual en `ninos/[id]/page.tsx`.
 
 ## Datos excluidos
 

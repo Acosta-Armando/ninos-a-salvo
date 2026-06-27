@@ -4,11 +4,14 @@ Plataforma humanitaria para el **reencuentro familiar** de niños tras emergenci
 
 ## Características principales
 
-- **Registro offline-first** en campo con sincronización automática al recuperar señal
+- **Registro offline-first** en campo: datos y fotos en IndexedDB (Dexie); sync automática al recuperar señal
+- **PWA** instalable con precache de inicio y registro (`/`, `/registro`)
 - **Tablero público** de niños con vida y listado de **fallecidos** para identificación
+- **Fallecidos sin fotografía**: registro y fichas sin imagen del niño (recuadro negro «Sin foto»)
 - **Búsqueda por nombre** sin exponer identidad en tarjetas ni fichas
+- **Rasgos particulares** obligatorios en todo registro
+- **UI offline**: barra de conexión, contador de pendientes sin sincronizar, enlaces al tablero bloqueados sin red
 - **Retiro seguro** con cédula, parentesco y tres fotos obligatorias
-- **PWA** instalable desde la página de inicio
 - **Tema claro/oscuro**
 
 ## Stack
@@ -32,11 +35,13 @@ Guía completa de configuración: [docs/configuracion.md](./docs/configuracion.m
 
 | Ruta | Descripción | Offline |
 |------|-------------|---------|
-| `/` | Landing e instalación PWA | No |
-| `/registro` | Alta de niño (vida o fallecido) | **Sí** (Dexie + sync) |
+| `/` | Landing e instalación PWA | **Sí** |
+| `/registro` | Alta de niño (vida o fallecido) | **Sí** (Dexie + foto local) |
 | `/tablero` | Niños con vida en búsqueda | No |
 | `/fallecidos` | Niños fallecidos en búsqueda | No |
-| `/ninos/[id]` | Ficha pública y retiro | No |
+| `/ninos/[id]` | Ficha pública | No |
+
+Sin conexión solo puedes usar inicio y registro. Tablero, fallecidos y fichas requieren internet (la app lo indica al intentar entrar).
 
 ## API
 
@@ -58,7 +63,8 @@ Guía completa de configuración: [docs/configuracion.md](./docs/configuracion.m
 ### Flujos
 
 - [PWA e instalación](./docs/flujos/pwa-instalacion.md)
-- [Registro offline y sincronización](./docs/flujos/registro-y-sincronizacion.md)
+- [Conexión y offline](./docs/flujos/conexion-y-offline.md) — barras UI, rutas offline, navegación bloqueada
+- [Registro offline y sincronización](./docs/flujos/registro-y-sincronizacion.md) — Dexie, fotos, sync global
 - [Tablero y búsqueda](./docs/flujos/tablero.md)
 - [Fallecidos](./docs/flujos/fallecidos.md)
 - [Ficha pública del niño](./docs/flujos/ficha-publica.md)
@@ -69,13 +75,14 @@ Guía completa de configuración: [docs/configuracion.md](./docs/configuracion.m
 ```
 src/
 ├── app/           # Rutas y API
-├── components/    # UI
+├── components/    # UI (registro, tablero, PWA, offline)
 ├── services/      # Lógica de negocio y acceso Prisma
-├── lib/           # Cliente DB, sync, storage, filtros
+├── hooks/         # useOnlineStatus, usePendingSyncCount
+├── lib/           # DB, sync, storage, offlineRoutes
 └── data/          # Estados y municipios de Venezuela
 prisma/            # Schema y migraciones
 docs/              # Documentación detallada
-public/            # manifest.json, service worker
+public/            # manifest.json, sw.js v3, iconos
 ```
 
 ## Scripts útiles
@@ -86,11 +93,12 @@ npm run build        # Build de producción
 npm run db:migrate   # Nueva migración en desarrollo
 npm run db:seed      # 100 registros de prueba
 npm run db:studio    # Explorador visual de la BD
+npm run icons:pwa    # Generar iconos PWA
 ```
 
 ## Privacidad (resumen)
 
-El nombre del niño y de sus familiares se almacena para **filtrar en el buscador**, pero **nunca** aparece en el tablero ni en la ficha pública. Detalle en [docs/privacidad.md](./docs/privacidad.md).
+El nombre del niño y de sus familiares se almacena para **filtrar en el buscador**, pero **nunca** aparece en el tablero ni en la ficha pública. Los niños fallecidos no llevan fotografía en la plataforma. Detalle en [docs/privacidad.md](./docs/privacidad.md).
 
 ## Licencia
 

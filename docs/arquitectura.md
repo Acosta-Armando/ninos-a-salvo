@@ -12,8 +12,8 @@ Plataforma humanitaria para el **reencuentro familiar** de niños tras emergenci
 | UI | shadcn/ui, Tailwind CSS 4, next-themes |
 | Base de datos | PostgreSQL en Supabase vía **Prisma 7** (`@prisma/adapter-pg`) |
 | Archivos | Supabase Storage (bucket `ninos-fotos`) |
-| Offline | Dexie (IndexedDB) solo en `/registro` |
-| PWA | `manifest.json` + service worker mínimo (`public/sw.js`) |
+| Offline | Dexie (IndexedDB) en `/registro`; fotos como `foto_data` (ArrayBuffer) |
+| PWA | `manifest.json` + `public/sw.js` v3 (precache `/`, `/registro`) |
 
 ## Diagrama de capas
 
@@ -22,7 +22,8 @@ flowchart TB
   subgraph browser [Navegador]
     Pages[Páginas Next.js]
     Registro[RegistroForm + Dexie]
-    Sync[SyncProvider]
+    Sync[SyncProvider layout]
+    OfflineUI[ConnectionStatusBar / PendingSyncBar / OnlineOnlyNav]
     StorageClient[supabase-js Storage]
   end
 
@@ -41,7 +42,8 @@ flowchart TB
   API --> Services
   Services --> Prisma
   Prisma --> PG
-  Registro --> Sync
+  Registro --> Dexie[(IndexedDB)]
+  Sync --> Dexie
   Sync --> StorageClient
   Sync --> API
   StorageClient --> Bucket
@@ -54,25 +56,40 @@ flowchart TB
 ```
 src/
 ├── app/                    # Rutas App Router
-│   ├── page.tsx            # Landing + banner PWA
+│   ├── page.tsx            # Landing
 │   ├── registro/           # Formulario offline-first
 │   ├── tablero/            # Niños con vida (Buscando)
 │   ├── fallecidos/         # Niños fallecidos (Buscando)
-│   ├── ninos/[id]/         # Ficha pública + retiro
+│   ├── ninos/[id]/         # Ficha pública
 │   └── api/ninos/          # Endpoints HTTP
-├── components/             # UI reutilizable
+├── components/
+│   ├── RegistroForm.tsx
+│   ├── ChildCard.tsx       # Tarjeta; sin foto real si fallecido
+│   ├── SinFotoPlaceholder.tsx
+│   ├── SyncProvider.tsx    # Sync global en layout
+│   ├── ConnectionStatusBar.tsx
+│   ├── PendingSyncBar.tsx
+│   ├── OfflineNavProvider.tsx
+│   ├── OnlineOnlyNav.tsx
+│   └── OfflinePrecache.tsx
 ├── services/               # Lógica de negocio + Prisma
 │   ├── child.service.ts
 │   └── errors.ts
+├── hooks/
+│   ├── useOnlineStatus.ts
+│   └── usePendingSyncCount.ts
 ├── lib/
-│   ├── prisma.ts           # Cliente Prisma (pooler)
-│   ├── db.ts               # Dexie / IndexedDB
-│   ├── sync.ts             # Sincronización offline → servidor
-│   ├── supabaseStorage.ts  # Subida de fotos
-│   ├── tablero.ts          # Filtros y paginación del tablero
-│   ├── publicChild.ts      # Selects que excluyen datos sensibles
-│   └── types.ts            # Tipos compartidos cliente/servidor
-└── data/venezuela.json     # Estados y municipios
+│   ├── prisma.ts
+│   ├── db.ts               # Dexie
+│   ├── sync.ts             # Offline → Storage → API
+│   ├── childPhoto.ts       # Resolver Blob desde Dexie
+│   ├── offlineRoutes.ts    # Rutas offline vs online-only
+│   ├── withTimeout.ts      # Timeout en subidas Storage
+│   ├── supabaseStorage.ts
+│   ├── tablero.ts
+│   ├── publicChild.ts
+│   └── types.ts
+└── data/venezuela.json
 ```
 
 ## Prisma y Supabase: dos servicios, un proyecto
@@ -82,7 +99,7 @@ Supabase no es un ORM alternativo a Prisma. En este proyecto cumplen roles disti
 | Servicio Supabase | Uso en la app | Conexión |
 |-------------------|---------------|----------|
 | **PostgreSQL** | Modelo `Child`, consultas del tablero, API | Prisma con `DATABASE_URL` (puerto **6543**, pooler) |
-| **Storage** | Fotos del niño y del retiro | Cliente JS en el navegador con clave anónima |
+| **Storage** | Fotos del niño (solo con vida) y del retiro | Cliente JS en el navegador con clave anónima |
 
 - **Migraciones**: CLI de Prisma con `DIRECT_URL` (puerto **5432**) definida en `prisma.config.ts`.
 - **Runtime**: `src/lib/prisma.ts` usa adapter `pg` + `DATABASE_URL`.
@@ -99,7 +116,7 @@ Toda petición a Prisma pasa por `src/services/child.service.ts`:
 | `upsertChild` | Crear/actualizar desde sync |
 | `registerChildRetiro` | Entrega con validaciones |
 
-Las rutas API y las páginas servidor solo delegan; no llaman a `prisma` directamente.
+`assertValidChildPayload` exige campos mínimos incluyendo `rasgos_particulares`.
 
 ## Modelo de datos (resumen)
 
@@ -108,4 +125,12 @@ Ver `prisma/schema.prisma`. Campos clave:
 - **`status`**: `Buscando` \| `Reencontrado`
 - **`estado_vital`**: `ConVida` \| `Fallecido`
 - **`fullname`**, **`nombre_padre`**, etc.: guardados para búsqueda interna, no expuestos en UI pública
+- **`rasgos_particulares`**: obligatorio al registrar; visible en ficha pública
+- **Foto del niño**: solo niños con vida; fallecidos sin `foto_url` en UI
 - **Retiro**: datos y tres URLs de foto (`cedula`, `persona`, `parentesco`)
+
+## Documentación de flujos
+
+- [Conexión y offline](./flujos/conexion-y-offline.md)
+- [Registro y sincronización](./flujos/registro-y-sincronizacion.md)
+- [Fallecidos](./flujos/fallecidos.md)

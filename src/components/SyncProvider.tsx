@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { triggerSync } from "@/lib/sync";
 
+/** Sincroniza pendientes al montar y al recuperar internet (toda la app). */
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleOnline = () => {

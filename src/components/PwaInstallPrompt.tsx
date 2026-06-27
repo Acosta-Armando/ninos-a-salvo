@@ -1,5 +1,4 @@
 "use client";
-
 import { Smartphone, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { PwaInstallButton } from "@/components/PwaInstallButton";

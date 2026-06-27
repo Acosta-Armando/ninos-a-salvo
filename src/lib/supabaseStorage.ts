@@ -2,7 +2,10 @@
  * Cliente de Supabase Storage para fotos.
  * Bucket esperado: ninos-fotos (público, políticas INSERT/SELECT/UPDATE para anon).
  */
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { withTimeout } from "./withTimeout";
+
+const UPLOAD_TIMEOUT_MS = 25_000;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -34,13 +37,21 @@ export async function uploadPhoto(
   blob: Blob,
   contentType = "image/jpeg",
 ): Promise<string> {
-  const { error } = await supabaseStorage.storage
-    .from(STORAGE_BUCKET)
-    .upload(path, blob, {
+  const upload = supabaseStorage.storage.from(STORAGE_BUCKET).upload(
+    path,
+    blob,
+    {
       contentType,
       upsert: true,
       cacheControl: "3600",
-    });
+    },
+  );
+
+  const { error } = await withTimeout(
+    upload,
+    UPLOAD_TIMEOUT_MS,
+    "Tiempo de espera agotado al subir la foto. Se reintentará al reconectar.",
+  );
 
   if (error) {
     throw new Error(`Error al subir foto: ${error.message}`);
@@ -62,6 +73,7 @@ export async function uploadRetiroPhoto(
   kind: RetiroPhotoKind,
 ): Promise<string> {
   const path = `${childId}/retiro-${kind}.jpg`;
-  const contentType = file instanceof File ? file.type || "image/jpeg" : "image/jpeg";
+  const contentType =
+    file instanceof File ? file.type || "image/jpeg" : "image/jpeg";
   return uploadPhoto(path, file, contentType);
 }

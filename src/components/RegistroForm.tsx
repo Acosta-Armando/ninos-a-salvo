@@ -1,5 +1,4 @@
 "use client";
-
 import { Camera, Heart, ImagePlus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -23,6 +22,7 @@ import { compressImage } from "@/lib/imageCompress";
 import { triggerSync } from "@/lib/sync";
 import { EDAD_RANGOS_REGISTRO } from "@/lib/tablero";
 import type { EstadoVital, LocalChild } from "@/lib/types";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import {
   Select,
   SelectContent,
@@ -33,6 +33,7 @@ import {
 
 export function RegistroForm() {
   const router = useRouter();
+  const online = useOnlineStatus();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [datosDesconocidos, setDatosDesconocidos] = useState(false);
@@ -96,7 +97,7 @@ export function RegistroForm() {
         throw new Error("Debes agregar una foto del niño");
       }
 
-      if (datosDesconocidos && !form.rasgos_particulares.trim()) {
+      if (!form.rasgos_particulares.trim()) {
         throw new Error(
           esFallecido
             ? "Describe los rasgos que puedas observar para ayudar a la identificación"
@@ -127,6 +128,13 @@ export function RegistroForm() {
 
       const id = crypto.randomUUID();
 
+      let foto_data: ArrayBuffer | undefined;
+      let foto_mime: string | undefined;
+      if (!esFallecido && fotoBlob) {
+        foto_data = await fotoBlob.arrayBuffer();
+        foto_mime = fotoBlob.type || "image/jpeg";
+      }
+
       const record: LocalChild = {
         id,
         fullname: datosDesconocidos ? undefined : form.fullname.trim(),
@@ -136,12 +144,13 @@ export function RegistroForm() {
         nombre_madre: form.nombre_madre.trim() || undefined,
         nombre_familiar_buscado:
           form.nombre_familiar_buscado.trim() || undefined,
-        rasgos_particulares: form.rasgos_particulares.trim() || undefined,
+        rasgos_particulares: form.rasgos_particulares.trim(),
         estado: form.estado,
         ciudad: form.ciudad,
         estado_resguardo: form.estado_resguardo.trim(),
         detalles_ubicacion: form.detalles_ubicacion.trim(),
-        foto_blob: esFallecido ? undefined : (fotoBlob ?? undefined),
+        foto_data,
+        foto_mime,
         informante_nombre: form.informante_nombre.trim(),
         informante_telefono: form.informante_telefono.trim(),
         sync_status: "pending",
@@ -154,11 +163,13 @@ export function RegistroForm() {
       setGeneratedId(id);
       setSuccess(true);
 
-      if (navigator.onLine) {
-        void triggerSync();
+      if (online) {
+        queueMicrotask(() => {
+          void triggerSync();
+        });
       }
 
-      const destino = navigator.onLine
+      const destino = online
         ? estadoVital === "Fallecido"
           ? "/fallecidos"
           : "/tablero"
@@ -190,9 +201,9 @@ export function RegistroForm() {
           )}
         </CardHeader>
         <CardContent className="text-center text-sm text-green-600 dark:text-green-400">
-          {navigator.onLine
-            ? "Sincronizando con el servidor..."
-            : "Sin conexión. El registro quedó guardado en este dispositivo y se sincronizará al recuperar internet."}
+          {online
+            ? "Guardado en este dispositivo. La foto y los datos se están sincronizando con el servidor."
+            : "Sin conexión. El registro y la foto quedaron guardados en este dispositivo y se subirán al recuperar internet."}
         </CardContent>
       </Card>
     );
@@ -331,9 +342,8 @@ export function RegistroForm() {
                     No se conocen sus datos
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Si no tienes nombre ni otros datos, marca esta opción. Describe
-                    los rasgos que puedas observar y se generará un ID para la
-                    identificación familiar.
+                    Si no tienes nombre ni otros datos, marca esta opción. Se
+                    generará un ID para la identificación familiar.
                   </p>
                 </div>
               </div>
@@ -350,8 +360,7 @@ export function RegistroForm() {
                   El niño no puede hablar / datos desconocidos
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Se generará un ID temporal. Los rasgos particulares serán
-                  obligatorios.
+                  Se generará un ID temporal en lugar del nombre.
                 </p>
               </div>
             </div>
@@ -385,16 +394,13 @@ export function RegistroForm() {
             </FormField>
           </div>
 
-          <FormField
-            label="Rasgos particulares"
-            required={datosDesconocidos}
-          >
+          <FormField label="Rasgos particulares" required>
             <Textarea
               value={form.rasgos_particulares}
               onChange={(e) =>
                 updateField("rasgos_particulares", e.target.value)
               }
-              required={datosDesconocidos}
+              required
               placeholder={
                 esFallecido
                   ? "Ropa, contexto del hallazgo, señas visibles que ayuden a la familia..."

@@ -1,5 +1,4 @@
 "use client";
-
 import { Download, ExternalLink, Loader2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

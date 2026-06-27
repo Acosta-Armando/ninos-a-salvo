@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import { Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

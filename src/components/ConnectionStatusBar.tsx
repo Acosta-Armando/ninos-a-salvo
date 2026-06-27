@@ -1,5 +1,4 @@
 "use client";
-
 import { Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useIsClient, useOnlineStatus } from "@/hooks/useOnlineStatus";

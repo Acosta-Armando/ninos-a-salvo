@@ -1,5 +1,4 @@
 "use client";
-
 import { Camera, ImagePlus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

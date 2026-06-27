@@ -1,19 +1,22 @@
 /**
  * Sincronización offline → servidor.
- * Flujo: Dexie (pending) → Supabase Storage (foto) → POST /api/ninos → synced.
- * Solo se activa desde SyncProvider en /registro.
+ * Flujo: Dexie (pending + foto local) → Supabase Storage → POST /api/ninos → synced.
  */
+import { resolveChildPhotoBlob } from "./childPhoto";
 import { localDb } from "./db";
 import { uploadPhoto } from "./supabaseStorage";
 import type { ChildPayload, LocalChild } from "./types";
 
-/** Sube la foto del niño si aún está como Blob en IndexedDB. */
+/** Sube la foto del niño si aún está guardada localmente. */
 async function uploadChildPhoto(
   child: LocalChild,
 ): Promise<{ foto_url?: string }> {
-  if (!child.foto_blob) return {};
+  if (!navigator.onLine) return {};
 
-  const foto_url = await uploadPhoto(`${child.id}/foto.jpg`, child.foto_blob);
+  const blob = resolveChildPhotoBlob(child);
+  if (!blob) return {};
+
+  const foto_url = await uploadPhoto(`${child.id}/foto.jpg`, blob);
   return { foto_url };
 }
 
@@ -44,10 +47,15 @@ function toPayload(
   };
 }
 
-/** Sincroniza un solo registro pending; devuelve false si falla. */
+/** Sincroniza un solo registro pending; devuelve false si falla o no hay red. */
 async function syncChild(child: LocalChild): Promise<boolean> {
-  const urls = await uploadChildPhoto(child);
-  const payload = toPayload(child, urls);
+  if (!navigator.onLine) return false;
+
+  const fresh = await localDb.children.get(child.id);
+  if (!fresh || fresh.sync_status !== "pending") return false;
+
+  const urls = await uploadChildPhoto(fresh);
+  const payload = toPayload(fresh, urls);
 
   const response = await fetch("/api/ninos", {
     method: "POST",
@@ -57,21 +65,26 @@ async function syncChild(child: LocalChild): Promise<boolean> {
 
   if (!response.ok) {
     const error = await response.text();
-    console.error(`Sync falló para ${child.id}:`, error);
+    console.error(`Sync falló para ${fresh.id}:`, error);
     return false;
   }
 
-  await localDb.children.update(child.id, {
+  await localDb.children.update(fresh.id, {
     sync_status: "synced",
-    foto_url: urls.foto_url ?? child.foto_url,
+    foto_url: urls.foto_url ?? fresh.foto_url,
     foto_blob: undefined,
+    foto_data: undefined,
+    foto_mime: undefined,
   });
 
   return true;
 }
 
 /** Procesa todos los registros con sync_status = pending. */
-export async function syncPendingChildren(): Promise<{ synced: number; failed: number }> {
+export async function syncPendingChildren(): Promise<{
+  synced: number;
+  failed: number;
+}> {
   if (!navigator.onLine) {
     return { synced: 0, failed: 0 };
   }
@@ -85,6 +98,8 @@ export async function syncPendingChildren(): Promise<{ synced: number; failed: n
   let failed = 0;
 
   for (const child of pending) {
+    if (!navigator.onLine) break;
+
     try {
       const ok = await syncChild(child);
       if (ok) synced++;

@@ -54,7 +54,7 @@ Crear manualmente en Supabase Dashboard:
 
 | Archivo | Ruta en el bucket |
 |---------|-------------------|
-| Foto del niño (registro) | `{childId}/foto.jpg` |
+| Foto del niño (registro, solo **Con vida**) | `{childId}/foto.jpg` |
 | Cédula (retiro) | `{childId}/retiro-cedula.jpg` |
 | Persona que retira | `{childId}/retiro-persona.jpg` |
 | Documento de parentesco | `{childId}/retiro-parentesco.jpg` |
@@ -76,3 +76,11 @@ npm run start
 ```
 
 Configura las mismas variables de entorno en el hosting (Vercel, etc.).
+
+## Modo offline (resumen)
+
+- El registro guarda datos en **IndexedDB** (Dexie); las fotos se almacenan como `foto_data` hasta sincronizar.
+- La subida a Storage ocurre solo con red, desde el navegador (`src/lib/sync.ts`), con timeout de 25 s.
+- Los niños **fallecidos** no generan `foto.jpg` en el bucket.
+- Rutas offline de la PWA: `/` y `/registro` (ver [Conexión y offline](./flujos/conexion-y-offline.md)).
+

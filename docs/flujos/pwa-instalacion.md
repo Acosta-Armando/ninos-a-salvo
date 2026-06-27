@@ -1,7 +1,7 @@
 # Flujo: PWA e instalación
 
-**Ruta:** `/`  
-**Componente:** `PwaInstallPrompt`
+**Rutas:** `/` (banner en pie de página vía `SiteFooter`)  
+**Componentes:** `PwaInstallBanner`, `PwaInstallButton`, `PwaInstallProvider`, `OfflinePrecache`
 
 ## Objetivo
 
@@ -11,29 +11,32 @@ Facilitar el acceso desde la pantalla de inicio del dispositivo, útil para resc
 
 ```mermaid
 flowchart TD
-  A[Usuario visita /] --> B{¿Ya instalada?}
-  B -->|Sí| Z[No mostrar banner]
-  B -->|No| C{¿iOS?}
-  C -->|Sí| D[Instrucciones Safari: Compartir → Añadir a inicio]
-  C -->|No| E[Registrar sw.js]
-  E --> F{beforeinstallprompt}
-  F -->|Disponible| G[Botón Instalar Niños a Salvo]
-  F -->|No| H[Texto: menú del navegador → Instalar]
-  D --> I[Usuario puede cerrar banner]
-  G --> I
-  H --> I
-  I --> J[sessionStorage: no volver a mostrar en la sesión]
+  A[Usuario visita la app] --> B[PwaInstallBanner en footer]
+  B --> C{¿Puede instalar?}
+  C -->|Android / desktop| D[Botón Instalar app]
+  C -->|iOS| E[Instrucciones Añadir a inicio]
+  C -->|Ya instalada| F[Botón Abrir app]
 ```
+
+El banner de instalación permanece visible en el pie de página para facilitar la instalación en puntos de resguardo.
 
 ## Archivos
 
 | Archivo | Rol |
 |---------|-----|
 | `public/manifest.json` | Nombre, iconos, `display: standalone` |
-| `public/sw.js` | Service worker mínimo (habilita instalación; sin caché offline de rutas) |
-| `src/components/PwaInstallPrompt.tsx` | UI del banner |
-| `src/app/layout.tsx` | Enlaza `manifest` en metadata |
+| `public/sw.js` | Service worker v3: precache `/` y `/registro`, runtime cache, fallback offline |
+| `public/icons/` | Iconos PWA (`npm run icons:pwa`) |
+| `src/components/PwaInstall*.tsx` | Banner, botón y provider de instalación |
+| `src/components/OfflinePrecache.tsx` | Registro SW y prefetch de rutas offline |
+| `src/app/layout.tsx` | Metadata `manifest`, barras de conexión y sync global |
 
 ## Alcance offline
 
-La PWA **no** cachea el tablero ni las fichas. El modo offline real solo aplica al **registro** (`/registro`) vía Dexie. Ver [Registro y sincronización](./registro-y-sincronizacion.md).
+| Ruta | Offline |
+|------|---------|
+| `/` | Sí (shell precacheado) |
+| `/registro` | Sí (formulario + Dexie) |
+| `/tablero`, `/fallecidos`, `/ninos/[id]` | No (requieren servidor) |
+
+El registro guarda datos y fotos en IndexedDB; la sincronización a Supabase ocurre al recuperar red. Ver [Registro y sincronización](./registro-y-sincronizacion.md) y [Conexión y offline](./conexion-y-offline.md).

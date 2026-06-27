@@ -1,5 +1,4 @@
 "use client";
-
 import { Smartphone } from "lucide-react";
 import { PwaInstallButton } from "@/components/PwaInstallButton";
 import { usePwaInstall } from "@/components/PwaInstallProvider";
