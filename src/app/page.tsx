@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Heart, MapPin, Phone, Search, Shield, Users, WifiOff } from 'lucide-react'
 import { AppHeader } from '@/components/AppHeader'
+import { OnlineOnlyButton, OnlineOnlyLink } from '@/components/OnlineOnlyNav'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -25,9 +26,9 @@ export default function HomePage() {
             Sin registro previo, sin contraseñas: solo ayuda rápida cuando más importa.
           </p>
           <div className='flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center'>
-            <Button asChild size='lg'>
-              <Link href='/tablero'>Ver tablero de niños</Link>
-            </Button>
+            <OnlineOnlyButton href='/tablero' size='lg'>
+              Ver tablero de niños
+            </OnlineOnlyButton>
             <Button asChild size='lg' variant='outline'>
               <Link href='/registro'>Registrar un niño</Link>
             </Button>
@@ -90,17 +91,17 @@ export default function HomePage() {
             </li>
             <li>
               <strong className='text-foreground'>Si buscas a un familiar:</strong> revisa el{' '}
-              <Link href='/tablero' className='text-primary hover:underline'>
+              <OnlineOnlyLink href='/tablero' className='text-primary hover:underline'>
                 tablero
-              </Link>{' '}
+              </OnlineOnlyLink>{' '}
               y filtra por zona o edad. Toca una tarjeta para ver detalles y el número de contacto.
             </li>
             <li>
               <strong className='text-foreground'>Si localizas a un niño fallecido:</strong> regístralo marcando la
               condición correspondiente. Aparecerá en la{' '}
-              <Link href='/fallecidos' className='text-primary hover:underline'>
+              <OnlineOnlyLink href='/fallecidos' className='text-primary hover:underline'>
                 lista de fallecidos
-              </Link>{' '}
+              </OnlineOnlyLink>{' '}
               para que su familia pueda identificarlo con dignidad.
             </li>
           </ol>
@@ -130,12 +131,9 @@ export default function HomePage() {
         </section>
 
         <div className='flex flex-col gap-3 pb-8 sm:flex-row'>
-          <Button asChild className='flex-1' size='lg'>
-            <Link href='/tablero'>Ir al tablero</Link>
-          </Button>
-          <Button asChild className='flex-1' size='lg' variant='secondary'>
-            <Link href='/fallecidos'>Ver fallecidos</Link>
-          </Button>
+          <OnlineOnlyButton href='/tablero' className='flex-1' size='lg'>
+            Ir al tablero
+          </OnlineOnlyButton>
         </div>
       </main>
     </div>

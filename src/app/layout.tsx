@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
+import { ConnectionStatusBar } from "@/components/ConnectionStatusBar";
+import { PendingSyncBar } from "@/components/PendingSyncBar";
+import { OfflineNavProvider } from "@/components/OfflineNavProvider";
+import { OfflinePrecache } from "@/components/OfflinePrecache";
 import { ThemeProvider, THEME_COOKIE } from "@/components/ThemeProvider";
 import { PwaInstallProvider } from "@/components/PwaInstallProvider";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -55,8 +59,15 @@ export default async function RootLayout({
       <body className="flex min-h-full flex-col font-sans">
         <ThemeProvider defaultTheme={theme}>
           <PwaInstallProvider>
-            <div className="flex min-h-full flex-1 flex-col">{children}</div>
-            <SiteFooter />
+            <OfflineNavProvider>
+              <div className="sticky top-0 z-50">
+                <ConnectionStatusBar />
+                <PendingSyncBar />
+              </div>
+              <OfflinePrecache />
+              <div className="flex min-h-full flex-1 flex-col">{children}</div>
+              <SiteFooter />
+            </OfflineNavProvider>
           </PwaInstallProvider>
         </ThemeProvider>
       </body>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { SinFotoPlaceholder } from "@/components/SinFotoPlaceholder";
 import { RetiroForm } from "@/components/RetiroForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +26,6 @@ export default async function NinoDetailPage({ params }: PageProps) {
 
   const isReencontrado = child.status === "Reencontrado";
   const esFallecido = child.estado_vital === "Fallecido";
-  const fotoSrc = child.foto_url ?? "/favicon.ico";
   const backHref = esFallecido ? "/fallecidos" : "/tablero";
 
   return (
@@ -126,15 +126,22 @@ export default async function NinoDetailPage({ params }: PageProps) {
         ) : null}
 
         <Card className="overflow-hidden pt-0">
-          <div className="relative aspect-[4/3] w-full bg-muted">
-            <Image
-              src={fotoSrc}
-              alt="Niño en resguardo"
-              fill
-              sizes="(max-width: 768px) 100vw, 672px"
-              className="object-cover"
-              priority
-            />
+          <div
+            className={`relative aspect-[4/3] w-full ${esFallecido ? "bg-black" : "bg-muted"}`}
+            aria-label={esFallecido ? "Sin foto" : undefined}
+          >
+            {esFallecido ? (
+              <SinFotoPlaceholder textClassName="text-base sm:text-lg" />
+            ) : (
+              <Image
+                src={child.foto_url ?? "/favicon.ico"}
+                alt="Niño en resguardo"
+                fill
+                sizes="(max-width: 768px) 100vw, 672px"
+                className="object-cover"
+                priority
+              />
+            )}
           </div>
           <CardContent className="space-y-3 pt-4">
             <p className="text-lg font-semibold">{child.edad_estimada}</p>
@@ -189,7 +196,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {!isReencontrado && !esFallecido && (
+        {/* {!isReencontrado && !esFallecido && (
           <Card>
             <CardHeader>
               <CardTitle>Registrar retiro</CardTitle>
@@ -198,7 +205,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
               <RetiroForm childId={child.id} />
             </CardContent>
           </Card>
-        )}
+        )} */}
       </main>
     </div>
   );

@@ -53,11 +53,7 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
   const installed = standalone || justInstalled
 
   useEffect(() => {
-    if (installed) return
-
-    if ('serviceWorker' in navigator) {
-      void navigator.serviceWorker.register('/sw.js').catch(() => {})
-    }
+    if (installed) return;
 
     const handler = (e: Event) => {
       e.preventDefault()

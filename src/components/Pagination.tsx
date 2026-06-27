@@ -1,5 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import type { TableroSearchParams } from "@/lib/tablero";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { requiresConnection } from "@/lib/offlineRoutes";
+import { cn } from "@/lib/utils";
+import { useOfflineNav } from "@/components/OfflineNavProvider";
 
 interface PaginationProps {
   currentPage: number;
@@ -25,6 +31,39 @@ function buildHref(
   if (page > 1) sp.set("page", String(page));
   const qs = sp.toString();
   return qs ? `${basePath}?${qs}` : basePath;
+}
+
+function PageNavItem({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const online = useOnlineStatus();
+  const { showOfflinePrompt } = useOfflineNav();
+  const blocked = requiresConnection(href) && !online;
+
+  if (!blocked) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={cn(className, "cursor-not-allowed opacity-50")}
+      onClick={showOfflinePrompt}
+      aria-disabled
+    >
+      {children}
+    </button>
+  );
 }
 
 export function Pagination({
@@ -54,23 +93,24 @@ export function Pagination({
       </p>
       <div className="flex flex-wrap items-center justify-center gap-1">
         {currentPage > 1 && (
-          <Link
+          <PageNavItem
             href={buildHref(currentPage - 1, params, basePath)}
             className="rounded-lg border px-4 py-2.5 text-sm hover:bg-muted"
           >
             ← Anterior
-          </Link>
+          </PageNavItem>
         )}
         {pages.map((p, i) => {
           const prev = pages[i - 1];
           const showEllipsis = prev !== undefined && p - prev > 1;
+          const href = buildHref(p, params, basePath);
           return (
             <span key={p} className="flex items-center gap-1">
               {showEllipsis && (
                 <span className="px-1 text-muted-foreground">…</span>
               )}
-              <Link
-                href={buildHref(p, params, basePath)}
+              <PageNavItem
+                href={href}
                 className={`min-w-10 rounded-lg px-4 py-2.5 text-center text-sm ${
                   p === currentPage
                     ? "bg-primary font-semibold text-primary-foreground"
@@ -78,17 +118,17 @@ export function Pagination({
                 }`}
               >
                 {p}
-              </Link>
+              </PageNavItem>
             </span>
           );
         })}
         {currentPage < totalPages && (
-          <Link
+          <PageNavItem
             href={buildHref(currentPage + 1, params, basePath)}
             className="rounded-lg border px-4 py-2.5 text-sm hover:bg-muted"
           >
             Siguiente →
-          </Link>
+          </PageNavItem>
         )}
       </div>
     </nav>

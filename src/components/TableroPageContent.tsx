@@ -5,6 +5,7 @@ import type { EstadoVital } from "../../generated/client";
 import { AppHeader } from "@/components/AppHeader";
 import { ChildCard } from "@/components/ChildCard";
 import { Pagination } from "@/components/Pagination";
+import { TableroNavTabs } from "@/components/TableroNavTabs";
 import { Button } from "@/components/ui/button";
 import { PAGE_SIZE, parsePage, type TableroSearchParams } from "@/lib/tablero";
 import { listTableroChildren } from "@/services";
@@ -43,14 +44,7 @@ export async function TableroPageContent({
       <AppHeader title={title} subtitle={subtitle} backHref="/" backLabel="← Inicio" />
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
-        <div className="flex flex-wrap gap-2">
-          <Button variant={!esFallecidos ? "default" : "outline"} size="sm" asChild>
-            <Link href="/tablero">Con vida</Link>
-          </Button>
-          <Button variant={esFallecidos ? "default" : "outline"} size="sm" asChild>
-            <Link href="/fallecidos">Fallecidos</Link>
-          </Button>
-        </div>
+        <TableroNavTabs esFallecidos={esFallecidos} />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
@@ -82,7 +76,7 @@ export async function TableroPageContent({
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {children.map((child) => (
-                <ChildCard key={child.id} {...child} />
+                <ChildCard key={child.id} {...child} esFallecido={esFallecidos} />
               ))}
             </div>
             <Pagination

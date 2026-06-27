@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OnlineOnlyLink } from "@/components/OnlineOnlyNav";
 import { GitBranch, Mail, UserPlus } from "lucide-react";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
 import { SITE } from "@/lib/site";
@@ -79,9 +80,9 @@ export function SiteFooter() {
               Inicio
             </Link>
             {" · "}
-            <Link href="/tablero" className="hover:text-foreground hover:underline">
+            <OnlineOnlyLink href="/tablero" className="hover:text-foreground hover:underline">
               Tablero
-            </Link>
+            </OnlineOnlyLink>
             {" · "}
             <Link href="/registro" className="hover:text-foreground hover:underline">
               Registrar

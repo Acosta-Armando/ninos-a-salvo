@@ -1,8 +1,8 @@
 "use client";
 
-import { Camera, ImagePlus, Loader2 } from "lucide-react";
+import { Camera, Heart, ImagePlus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EstadoCiudadSelect } from "@/components/EstadoCiudadSelect";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +44,7 @@ export function RegistroForm() {
   const [generatedId, setGeneratedId] = useState<string | null>(null);
 
   const [estadoVital, setEstadoVital] = useState<EstadoVital>("ConVida");
+  const esFallecido = estadoVital === "Fallecido";
   const [edadRango, setEdadRango] = useState<string>("");
 
   const [form, setForm] = useState({
@@ -65,7 +66,7 @@ export function RegistroForm() {
   };
 
   const handlePhoto = useCallback(async (file: File | undefined) => {
-    if (!file) return;
+    if (!file || esFallecido) return;
     try {
       const compressed = await compressImage(file);
       setFotoBlob(compressed);
@@ -74,7 +75,16 @@ export function RegistroForm() {
     } catch {
       setError("No se pudo procesar la foto. Intenta de nuevo.");
     }
-  }, []);
+  }, [esFallecido]);
+
+  useEffect(() => {
+    if (!esFallecido) return;
+    setFotoBlob(null);
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, [esFallecido]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,19 +92,23 @@ export function RegistroForm() {
     setSaving(true);
 
     try {
-      if (!fotoBlob) {
+      if (!esFallecido && !fotoBlob) {
         throw new Error("Debes agregar una foto del niño");
       }
 
       if (datosDesconocidos && !form.rasgos_particulares.trim()) {
         throw new Error(
-          "Describe los rasgos particulares del niño (ropa, altura, etc.)",
+          esFallecido
+            ? "Describe los rasgos que puedas observar para ayudar a la identificación"
+            : "Describe los rasgos particulares del niño (ropa, altura, etc.)",
         );
       }
 
       if (!datosDesconocidos && !form.fullname.trim()) {
         throw new Error(
-          "Ingresa el nombre del niño o marca datos desconocidos",
+          esFallecido
+            ? "Ingresa el nombre del niño o indica que no se conocen sus datos"
+            : "Ingresa el nombre del niño o marca datos desconocidos",
         );
       }
 
@@ -127,7 +141,7 @@ export function RegistroForm() {
         ciudad: form.ciudad,
         estado_resguardo: form.estado_resguardo.trim(),
         detalles_ubicacion: form.detalles_ubicacion.trim(),
-        foto_blob: fotoBlob,
+        foto_blob: esFallecido ? undefined : (fotoBlob ?? undefined),
         informante_nombre: form.informante_nombre.trim(),
         informante_telefono: form.informante_telefono.trim(),
         sync_status: "pending",
@@ -144,7 +158,11 @@ export function RegistroForm() {
         void triggerSync();
       }
 
-      const destino = estadoVital === "Fallecido" ? "/fallecidos" : "/tablero";
+      const destino = navigator.onLine
+        ? estadoVital === "Fallecido"
+          ? "/fallecidos"
+          : "/tablero"
+        : "/";
       setTimeout(() => router.push(destino), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrar");
@@ -174,7 +192,7 @@ export function RegistroForm() {
         <CardContent className="text-center text-sm text-green-600 dark:text-green-400">
           {navigator.onLine
             ? "Sincronizando con el servidor..."
-            : "Sin conexión. Se sincronizará al recuperar internet."}
+            : "Sin conexión. El registro quedó guardado en este dispositivo y se sincronizará al recuperar internet."}
         </CardContent>
       </Card>
     );
@@ -192,62 +210,102 @@ export function RegistroForm() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-lg">Condición del niño</CardTitle>
+          <CardDescription>
+            Indica si el registro es para buscar reencuentro o para identificación
+            familiar con dignidad.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select
+            value={estadoVital}
+            onValueChange={(v) => setEstadoVital(v as EstadoVital)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ConVida">Con vida — busca reencuentro</SelectItem>
+              <SelectItem value="Fallecido">Fallecido — identificación familiar</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-lg">Foto del niño</CardTitle>
           <CardDescription>
-            Usa la cámara o sube una imagen desde tu galería.
+            {esFallecido
+              ? "En este tipo de registro no se solicitan imágenes."
+              : "Usa la cámara o sube una imagen desde tu galería."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => void handlePhoto(e.target.files?.[0])}
-          />
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => void handlePhoto(e.target.files?.[0])}
-          />
-
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt="Vista previa"
-              className="aspect-[4/3] w-full rounded-lg border object-cover"
-            />
-          ) : (
-            <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/40 text-muted-foreground">
-              <ImagePlus className="size-10 opacity-50" />
-              <p className="text-sm">Aún no hay foto seleccionada</p>
+          {esFallecido ? (
+            <div className="flex gap-3 rounded-lg border border-amber-200/80 bg-amber-50/80 p-4 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+              <Heart className="mt-0.5 size-5 shrink-0 text-amber-700 dark:text-amber-300" />
+              <p>
+                Con cariño te pedimos que no subas fotografías de niños que hayan
+                fallecido. Las imágenes pueden ser muy dolorosas para sus familias.
+                Con los datos que completes aquí —nombre, edad, rasgos y lugar— será
+                suficiente para ayudar a identificarlo con respeto y delicadeza.
+              </p>
             </div>
-          )}
+          ) : (
+            <>
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => void handlePhoto(e.target.files?.[0])}
+              />
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => void handlePhoto(e.target.files?.[0])}
+              />
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="gap-2"
-              onClick={() => cameraInputRef.current?.click()}
-            >
-              <Camera className="size-4" />
-              Cámara
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="gap-2"
-              onClick={() => galleryInputRef.current?.click()}
-            >
-              <ImagePlus className="size-4" />
-              Galería
-            </Button>
-          </div>
+              {previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewUrl}
+                  alt="Vista previa"
+                  className="aspect-[4/3] w-full rounded-lg border object-cover"
+                />
+              ) : (
+                <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/40 text-muted-foreground">
+                  <ImagePlus className="size-10 opacity-50" />
+                  <p className="text-sm">Aún no hay foto seleccionada</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera className="size-4" />
+                  Cámara
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => galleryInputRef.current?.click()}
+                >
+                  <ImagePlus className="size-4" />
+                  Galería
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -259,38 +317,45 @@ export function RegistroForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Condición del niño *</Label>
-            <Select
-              value={estadoVital}
-              onValueChange={(v) => setEstadoVital(v as EstadoVital)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ConVida">Con vida — busca reencuentro</SelectItem>
-                <SelectItem value="Fallecido">Fallecido — identificación familiar</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
-            <Checkbox
-              id="desconocidos"
-              checked={datosDesconocidos}
-              onCheckedChange={(v) => setDatosDesconocidos(v === true)}
-            />
-            <div className="space-y-1">
-              <Label htmlFor="desconocidos" className="cursor-pointer">
-                El niño no puede hablar / datos desconocidos
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Se generará un ID temporal. Los rasgos particulares serán
-                obligatorios.
-              </p>
+          {esFallecido ? (
+            <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+              <p className="text-sm font-medium">¿Se conocen los datos del niño?</p>
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="desconocidos"
+                  checked={datosDesconocidos}
+                  onCheckedChange={(v) => setDatosDesconocidos(v === true)}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="desconocidos" className="cursor-pointer">
+                    No se conocen sus datos
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Si no tienes nombre ni otros datos, marca esta opción. Describe
+                    los rasgos que puedas observar y se generará un ID para la
+                    identificación familiar.
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+              <Checkbox
+                id="desconocidos"
+                checked={datosDesconocidos}
+                onCheckedChange={(v) => setDatosDesconocidos(v === true)}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="desconocidos" className="cursor-pointer">
+                  El niño no puede hablar / datos desconocidos
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Se generará un ID temporal. Los rasgos particulares serán
+                  obligatorios.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Nombre del niño" required={!datosDesconocidos}>
@@ -330,7 +395,11 @@ export function RegistroForm() {
                 updateField("rasgos_particulares", e.target.value)
               }
               required={datosDesconocidos}
-              placeholder="Ropa, altura, color de ojos, señas particulares..."
+              placeholder={
+                esFallecido
+                  ? "Ropa, contexto del hallazgo, señas visibles que ayuden a la familia..."
+                  : "Ropa, altura, color de ojos, señas particulares..."
+              }
               rows={3}
             />
           </FormField>
