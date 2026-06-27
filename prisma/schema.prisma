@@ -1,0 +1,56 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated"
+}
+
+enum ChildStatus {
+  Buscando
+  Reencontrado
+}
+
+enum EstadoVital {
+  ConVida
+  Fallecido
+}
+
+model Child {
+  id                      String      @id @default(uuid())
+  fullname                String?
+  edad_estimada           String
+  edad_anios              Int
+  nombre_padre            String?
+  nombre_madre            String?
+  nombre_familiar_buscado String?
+  rasgos_particulares     String?     @db.Text
+  estado                  String
+  ciudad                  String
+  estado_resguardo        String
+  detalles_ubicacion      String      @db.Text
+  foto_url                String?
+  informante_nombre       String
+  informante_telefono     String
+  status                  ChildStatus @default(Buscando)
+  estado_vital            EstadoVital @default(ConVida)
+  created_at              DateTime    @default(now())
+  updated_at              DateTime    @updatedAt
+
+  retiro_cedula              String?
+  retiro_fullname            String?
+  retiro_parentesco          String?
+  retiro_telefono            String?
+  retiro_foto_cedula_url     String?
+  retiro_foto_persona_url    String?
+  retiro_foto_parentesco_url String?
+
+  @@index([status])
+  @@index([estado_vital])
+  @@index([created_at])
+  @@index([estado])
+  @@index([ciudad])
+  @@index([edad_anios])
+  @@index([fullname])
+}

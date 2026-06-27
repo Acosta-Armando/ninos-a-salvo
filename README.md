@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Niños a Salvo
 
-## Getting Started
+Plataforma humanitaria para el **reencuentro familiar** de niños tras emergencia sísmica en Venezuela. Permite registrar niños en puntos de resguardo (incluso sin internet), publicar fichas para que las familias los busquen y gestionar entregas seguras con verificación de identidad.
 
-First, run the development server:
+## Características principales
+
+- **Registro offline-first** en campo con sincronización automática al recuperar señal
+- **Tablero público** de niños con vida y listado de **fallecidos** para identificación
+- **Búsqueda por nombre** sin exponer identidad en tarjetas ni fichas
+- **Retiro seguro** con cédula, parentesco y tres fotos obligatorias
+- **PWA** instalable desde la página de inicio
+- **Tema claro/oscuro**
+
+## Stack
+
+Next.js 16 · React 19 · TypeScript · Prisma 7 · PostgreSQL (Supabase) · Supabase Storage · Dexie · shadcn/ui
+
+## Inicio rápido
 
 ```bash
+npm install
+cp .env.example .env.local   # completa credenciales Supabase
+npx prisma migrate deploy
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre **http://localhost:9002**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Guía completa de configuración: [docs/configuracion.md](./docs/configuracion.md)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Rutas de la aplicación
 
-## Learn More
+| Ruta | Descripción | Offline |
+|------|-------------|---------|
+| `/` | Landing e instalación PWA | No |
+| `/registro` | Alta de niño (vida o fallecido) | **Sí** (Dexie + sync) |
+| `/tablero` | Niños con vida en búsqueda | No |
+| `/fallecidos` | Niños fallecidos en búsqueda | No |
+| `/ninos/[id]` | Ficha pública y retiro | No |
 
-To learn more about Next.js, take a look at the following resources:
+## API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/api/ninos` | Upsert desde sincronización offline |
+| `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega del niño |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentación
 
-## Deploy on Vercel
+Índice completo en **[docs/README.md](./docs/README.md)**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Arquitectura y configuración
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Arquitectura](./docs/arquitectura.md) — capas, Prisma + Supabase, estructura del código
+- [Configuración](./docs/configuracion.md) — variables de entorno, migraciones, bucket Storage
+- [Privacidad](./docs/privacidad.md) — qué se guarda, busca y muestra en público
+
+### Flujos
+
+- [PWA e instalación](./docs/flujos/pwa-instalacion.md)
+- [Registro offline y sincronización](./docs/flujos/registro-y-sincronizacion.md)
+- [Tablero y búsqueda](./docs/flujos/tablero.md)
+- [Fallecidos](./docs/flujos/fallecidos.md)
+- [Ficha pública del niño](./docs/flujos/ficha-publica.md)
+- [Retiro seguro](./docs/flujos/retiro-seguro.md)
+
+## Estructura del proyecto
+
+```
+src/
+├── app/           # Rutas y API
+├── components/    # UI
+├── services/      # Lógica de negocio y acceso Prisma
+├── lib/           # Cliente DB, sync, storage, filtros
+└── data/          # Estados y municipios de Venezuela
+prisma/            # Schema y migraciones
+docs/              # Documentación detallada
+public/            # manifest.json, service worker
+```
+
+## Scripts útiles
+
+```bash
+npm run dev          # Desarrollo (puerto 9002)
+npm run build        # Build de producción
+npm run db:migrate   # Nueva migración en desarrollo
+npm run db:seed      # 100 registros de prueba
+npm run db:studio    # Explorador visual de la BD
+```
+
+## Privacidad (resumen)
+
+El nombre del niño y de sus familiares se almacena para **filtrar en el buscador**, pero **nunca** aparece en el tablero ni en la ficha pública. Detalle en [docs/privacidad.md](./docs/privacidad.md).
+
+## Licencia
+
+Proyecto privado — uso humanitario.
