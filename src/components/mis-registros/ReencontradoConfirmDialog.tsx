@@ -56,16 +56,14 @@ export function ReencontradoConfirmDialog({
         >
           <p>
             Usa esta opción solo si el niño, niña o adolescente{" "}
-            <strong className="text-foreground">ya no está en tu resguardo</strong>{" "}
-            porque hubo un reencuentro seguro en el punto.
+            <strong className="text-foreground">ya no está bajo tu resguardo</strong>{" "}
+            y los organismos competentes se hicieron cargo del caso.
           </p>
           <p>
-            Esta plataforma <strong className="text-foreground">no entrega</strong>{" "}
-            a nadie. No debes entregar a una persona solo porque vio la ficha en
-            internet. La entrega debe ocurrir en el resguardo, con familiar
-            verificado y, de ser posible, con el respaldo de una organización
-            humanitaria o un órgano público (Defensa Civil, Protección Civil o
-            autoridades locales).
+            Esta plataforma <strong className="text-foreground">no entrega ni autoriza
+            entregas</strong>. No debes entregar a nadie por haber visto una ficha en internet.
+            El reencuentro y la custodia corresponden a Defensa Civil, autoridades locales u
+            otras instituciones habilitadas.
           </p>
         </div>
         <div className="mt-4 flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
@@ -79,8 +77,8 @@ export function ReencontradoConfirmDialog({
             htmlFor="reencontrado-confirm"
             className="cursor-pointer text-sm leading-snug font-normal"
           >
-            Confirmo que el reencuentro ocurrió de forma segura y quiero quitar
-            este aviso del tablero público.
+            Confirmo que el menor ya no está en mi resguardo y quiero quitar este aviso del
+            tablero. Entiendo que la app no realiza ni valida entregas.
           </Label>
         </div>
         <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">

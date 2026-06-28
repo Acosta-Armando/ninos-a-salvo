@@ -21,7 +21,7 @@ const sections = [
   { id: "tablero", label: "Buscar en el tablero" },
   { id: "fallecidos", label: "Registros de fallecidos" },
   { id: "sin-fotos", label: "Por qué no hay fotografías" },
-  { id: "entrega-segura", label: "Por qué no se entregan por la app" },
+  { id: "entrega-segura", label: "Sin entregas por la app" },
   { id: "mis-registros", label: "Mis registros en este dispositivo" },
   { id: "privacidad", label: "Privacidad de los nombres" },
 ] as const;
@@ -204,8 +204,9 @@ export function AyudaContent() {
           </li>
         </ol>
         <p>
-          Si reconoces a alguien, llama al número de contacto o acude al punto
-          de resguardo para verificar con calma antes de cualquier reencuentro.
+          Si reconoces a alguien, llama al número de contacto o acude al punto de resguardo para
+          pedir información. Cualquier reencuentro debe ser coordinado por los organismos
+          competentes, no por esta aplicación.
         </p>
       </HelpSection>
 
@@ -244,30 +245,25 @@ export function AyudaContent() {
         </p>
       </HelpSection>
 
-      <HelpSection id="entrega-segura" icon={Shield} title="Por qué no se entregan por la app">
+      <HelpSection id="entrega-segura" icon={Shield} title="Sin entregas por la app">
         <p>
-          Esta plataforma <strong className="text-foreground">no coordina entregas</strong>{" "}
-          de menores a través de un botón ni entrega automática a quien los
-          busca. Eso sería peligroso: podría facilitar secuestros o entregas a
-          personas sin parentesco real.
+          Esta plataforma <strong className="text-foreground">no promueve ni coordina entregas</strong>{" "}
+          de menores. Por motivos de seguridad, no debe usarse para autorizar que un voluntario o
+          familiar se lleve a un niño, niña o adolescente.
         </p>
         <p>
-          El reencuentro debe hacerse con{" "}
-          <strong className="text-foreground">verificación de identidad</strong>{" "}
-          (documentos, parentesco) y, de ser posible, con el respaldo de una
-          organización humanitaria o un órgano público — Defensa Civil,
-          Protección Civil o autoridades locales.
+          El <strong className="text-foreground">reencuentro y la custodia</strong> son
+          responsabilidad de organismos competentes: Defensa Civil, Protección Civil, autoridades
+          locales u organizaciones acreditadas. Ellos verifican identidad, parentesco y procedimiento.
         </p>
         <p>
-          Por el bien del niño, niña o adolescente, no debe entregarse a nadie
-          sin confirmar con calma que es familiar directo o tutor legítimo. La
-          app sirve para <strong className="text-foreground">ubicar</strong> y{" "}
-          <strong className="text-foreground">contactar</strong>, no para
-          autorizar la entrega por sí sola.
+          La app sirve para <strong className="text-foreground">ubicar</strong> y{" "}
+          <strong className="text-foreground">contactar</strong> el punto de resguardo, no para
+          sustituir a las instituciones.
         </p>
         <p>
-          Cuando un menor ya no está en tu resguardo tras un reencuentro seguro,
-          puedes quitar el aviso del tablero desde{" "}
+          Si el menor ya no está en tu resguardo porque los organismos competentes se hicieron
+          cargo, puedes quitar el aviso del tablero desde{" "}
           <Link href="/mis-registros" className="text-primary hover:underline">
             Mis registros
           </Link>{" "}
@@ -288,9 +284,8 @@ export function AyudaContent() {
         <p>
           Para registros con vida aún en búsqueda, puedes usar{" "}
           <strong className="text-foreground">Ya no está en mi resguardo</strong>{" "}
-          después de confirmar que el reencuentro fue seguro. Eso los saca del
-          tablero público; no sustituye la verificación en persona ni el respaldo
-          de una autoridad u organización.
+          cuando el menor dejó tu cuidado y los organismos competentes asumieron el caso. Eso
+          quita el aviso del tablero público; no significa que la app haya validado una entrega.
         </p>
         <p>
           Si no hay internet al cerrar, el cambio queda guardado y se sube al

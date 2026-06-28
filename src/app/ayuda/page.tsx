@@ -4,7 +4,7 @@ import { AyudaContent } from "@/components/ayuda/AyudaContent";
 export const metadata = {
   title: "Ayuda — Niños a Salvo",
   description:
-    "Guía de uso: registro, tablero, privacidad, fotografías y entrega segura",
+    "Guía de uso: registro, tablero, privacidad, fotografías y protección de menores",
 };
 
 export default function AyudaPage() {

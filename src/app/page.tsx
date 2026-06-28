@@ -68,12 +68,13 @@ export default async function HomePage() {
           <Card>
             <CardHeader>
               <Shield className='mb-1 size-5 text-primary' />
-              <CardTitle className='text-base'>Retiro seguro</CardTitle>
+              <CardTitle className='text-base'>Sin entregas por la app</CardTitle>
             </CardHeader>
             <CardContent className='text-sm text-muted-foreground'>
-              La entrega exige confirmar parentesco y documentos, preferiblemente con el acompañamiento de una
-              organización o autoridad pública. Una vez entregado, el registro queda bloqueado para evitar entregas
-              indebidas.
+              Por seguridad, esta plataforma no promueve ni coordina la entrega de menores. El
+              reencuentro y la custodia deben quedar en manos de organismos competentes —Defensa
+              Civil, Protección Civil, autoridades locales u organizaciones acreditadas—. La app sirve
+              solo para ubicar y contactar el punto de resguardo.
             </CardContent>
           </Card>
           <Card>
@@ -133,8 +134,9 @@ export default async function HomePage() {
             <div>
               <p className='font-medium'>Contacto directo</p>
               <p className='mt-1 text-sm text-muted-foreground'>
-                Cada registro muestra el teléfono de quien tiene al niño, niña o adolescente en resguardo. Llama para
-                pedir información o coordinar el reencuentro.
+                Cada registro muestra el teléfono de quien tiene al niño, niña o adolescente en resguardo. Llama
+                para pedir información sobre el punto. El reencuentro formal lo coordinan las autoridades u
+                organizaciones habilitadas, no esta aplicación.
               </p>
             </div>
           </div>

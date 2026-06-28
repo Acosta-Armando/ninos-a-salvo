@@ -1,12 +1,12 @@
 "use client";
-import { Phone } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { requiresConnection } from "@/lib/offlineRoutes";
-import { formatEdadEstimada } from "@/lib/edad";
-import { cn } from "@/lib/utils";
-import { useOfflineNav } from "@/components/offline/OfflineNavProvider";
+import { ChevronRight, Phone } from "lucide-react";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { useOfflineNav } from "@/components/offline/OfflineNavProvider";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { formatEdadEstimada } from "@/lib/edad";
+import { requiresConnection } from "@/lib/offlineRoutes";
+import { cn } from "@/lib/utils";
 
 interface ChildCardProps {
   id: string;
@@ -41,31 +41,41 @@ export function ChildCard({
   const card = (
     <Card
       className={cn(
-        "flex h-full flex-col transition-shadow",
-        blocked ? "cursor-not-allowed opacity-60" : "hover:shadow-md",
+        "transition-shadow",
+        "max-sm:w-full",
+        blocked ? "cursor-not-allowed opacity-60" : "hover:shadow-md active:scale-[0.99]",
+        "sm:flex sm:h-full sm:flex-col",
       )}
     >
-      <CardContent className="space-y-2 p-3">
-        <p className="text-sm font-medium text-primary">
-          {formatEdadEstimada(edad_estimada, edad_anios)}
-        </p>
+      <CardContent className="space-y-2.5 px-4 sm:space-y-2 sm:px-3">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium text-primary">
+            {formatEdadEstimada(edad_estimada, edad_anios)}
+          </p>
+          <ChevronRight
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground sm:hidden"
+            aria-hidden
+          />
+        </div>
         {rasgos_particulares ? (
-          <p className="line-clamp-3 text-xs text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground sm:line-clamp-3 sm:text-xs">
             {rasgos_particulares}
           </p>
         ) : null}
-        <p className="truncate text-sm font-semibold">
-          {ciudad}, {estado}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {estado_resguardo}
-        </p>
-        <p className="line-clamp-2 text-xs text-muted-foreground">
-          {detalles_ubicacion}
-        </p>
-        <p className="flex items-center gap-1 text-xs font-medium text-primary">
-          <Phone className="size-3 shrink-0" />
-          <span className="truncate">{informante_telefono}</span>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold sm:truncate">
+            {ciudad}, {estado}
+          </p>
+          <p className="text-sm text-muted-foreground sm:truncate sm:text-xs">
+            {estado_resguardo}
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground sm:line-clamp-2 sm:text-xs">
+            {detalles_ubicacion}
+          </p>
+        </div>
+        <p className="flex items-center gap-1.5 text-sm font-medium text-primary sm:text-xs">
+          <Phone className="size-3.5 shrink-0 sm:size-3" />
+          <span className="break-all sm:truncate">{informante_telefono}</span>
         </p>
         {esFallecido ? (
           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -80,7 +90,7 @@ export function ChildCard({
     return (
       <button
         type="button"
-        className="group block h-full w-full text-left"
+        className="block w-full text-left"
         onClick={showOfflinePrompt}
         aria-disabled
       >
@@ -90,7 +100,7 @@ export function ChildCard({
   }
 
   return (
-    <Link href={href} className="group block h-full w-full">
+    <Link href={href} className="block w-full sm:h-full">
       {card}
     </Link>
   );

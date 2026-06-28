@@ -11,7 +11,7 @@ export class ChildNotFoundError extends Error {
 
 export class ChildAlreadyDeliveredError extends Error {
   constructor() {
-    super("Este registro ya fue entregado a su familia");
+    super("Este registro ya está cerrado y no aparece en el tablero");
     this.name = "ChildAlreadyDeliveredError";
   }
 }
