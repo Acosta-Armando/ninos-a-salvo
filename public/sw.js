@@ -54,6 +54,17 @@ function shouldHandleOffline(request, url) {
   return isOfflineRoute(url) || isNextAsset(url) || isRscRequest(request, url)
 }
 
+// Genera una Request personalizada para guardar el RSC con un identificador único en la caché
+function getCacheKey(request, url) {
+  if (isRscRequest(request, url)) {
+    // Añadimos un sufijo o parámetro virtual para diferenciar el payload RSC del documento HTML
+    const rscUrl = new URL(request.url)
+    rscUrl.searchParams.set('__next_rsc__', '1')
+    return new Request(rscUrl.toString(), { headers: request.headers })
+  }
+  return request
+}
+
 async function cachePut(request, response) {
   if (request.method !== 'GET' || !response || response.status !== 200) return
 
@@ -61,22 +72,23 @@ async function cachePut(request, response) {
   const cacheName = request.mode === 'navigate' || isOfflineRoute(url) ? SHELL_CACHE : RUNTIME_CACHE
 
   const cache = await caches.open(cacheName)
-  await cache.put(request, response.clone())
+  const cacheKey = getCacheKey(request, url)
+  await cache.put(cacheKey, response.clone())
 }
 
-async function findCachedForPath(pathname) {
+async function findCachedForPath(pathname, isRsc) {
   const path = normalizePath(pathname)
 
   for (const cacheName of [SHELL_CACHE, RUNTIME_CACHE]) {
     const cache = await caches.open(cacheName)
-
-    const direct = await cache.match(path)
-    if (direct) return direct
-
     const keys = await cache.keys()
+
     for (const req of keys) {
       const keyUrl = new URL(req.url)
-      if (normalizePath(keyUrl.pathname) === path) {
+      const matchesPath = normalizePath(keyUrl.pathname) === path
+      const hasRscParam = keyUrl.searchParams.has('__next_rsc__')
+
+      if (matchesPath && (isRsc ? hasRscParam : !hasRscParam)) {
         const match = await cache.match(req)
         if (match) return match
       }
@@ -88,22 +100,19 @@ async function findCachedForPath(pathname) {
 
 async function networkFirstOffline(request) {
   const url = new URL(request.url)
+  const isRsc = isRscRequest(request, url)
+  const cacheKey = getCacheKey(request, url)
 
   try {
     const response = await fetch(request)
     await cachePut(request, response)
     return response
   } catch {
-    const exact = await caches.match(request)
+    const exact = await caches.match(cacheKey)
     if (exact) return exact
 
-    const byPath = await findCachedForPath(url.pathname)
+    const byPath = await findCachedForPath(url.pathname, isRsc)
     if (byPath) return byPath
-
-    if (request.mode === 'navigate' || isRscRequest(request, url)) {
-      const shell = await findCachedForPath(url.pathname)
-      if (shell) return shell
-    }
 
     return new Response('Sin conexión. Visita esta página una vez con internet para guardarla en caché.', {
       status: 503,
@@ -160,7 +169,10 @@ async function precacheOfflineRoutes() {
       })
       const responseRsc = await fetch(rscRequest, { cache: 'no-store' })
       if (responseRsc.ok) {
-        await shell.put(rscRequest, responseRsc)
+        // Guardamos el RSC usando la URL virtual simulada por getCacheKey
+        const virtualRscUrl = new URL(absoluteUrl)
+        virtualRscUrl.searchParams.set('__next_rsc__', '1')
+        await shell.put(virtualRscUrl.toString(), responseRsc)
       }
     } catch {
       // Error silencioso en fallo de red local durante el proceso
@@ -172,7 +184,9 @@ async function precacheOfflineRoutes() {
       const absoluteUrl = new URL(url, origin).toString()
       const response = await fetch(absoluteUrl, { cache: 'no-store' })
       if (response.ok) {
-        const cache = OFFLINE_PATHS.has(normalizePath(new URL(url, origin).pathname)) ? shell : await caches.open(RUNTIME_CACHE)
+        const cache = OFFLINE_PATHS.has(normalizePath(new URL(url, origin).pathname))
+          ? shell
+          : await caches.open(RUNTIME_CACHE)
         await cache.put(url, response.clone())
       }
     } catch {
