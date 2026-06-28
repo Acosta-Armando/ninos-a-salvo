@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { localDb } from '@/lib/db'
 import { getDisplayName } from '@/lib/displayName'
+import { generateManageToken } from '@/lib/manageToken'
 import { parseEdadRegistro } from '@/lib/edad'
 import { registroFormSchema, stripDigitsInput, stripNameInput } from '@/lib/registroSchema'
 import { triggerSync } from '@/lib/sync'
@@ -72,9 +73,12 @@ export function RegistroForm() {
 
     try {
       const id = crypto.randomUUID()
+      const manage_token = generateManageToken()
 
       const record: LocalChild = {
         id,
+        manage_token,
+        close_status: 'none',
         fullname: values.datosDesconocidos ? undefined : values.fullname.trim(),
         edad_estimada: edadParsed.edad_estimada,
         edad_anios: edadParsed.edad_anios,

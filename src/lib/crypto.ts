@@ -134,3 +134,18 @@ export function buildIdentitySearchTokens(
 export function queryToSearchTokens(query: string): string[] {
   return normalizeSearchWords(query).map(searchToken);
 }
+
+/** Hash del token de gestión del dispositivo (cerrar registro en mis-registros). */
+export function hashManageToken(token: string): string {
+  return createHmac("sha256", getKey())
+    .update(`manage:${token}`)
+    .digest("hex");
+}
+
+export function verifyManageToken(
+  token: string,
+  storedHash: string | null | undefined,
+): boolean {
+  if (!token?.trim() || !storedHash) return false;
+  return hashManageToken(token.trim()) === storedHash;
+}

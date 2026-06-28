@@ -1,0 +1,109 @@
+"use client";
+import { Shield } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+interface ReencontradoConfirmDialogProps {
+  open: boolean;
+  loading?: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+/**
+ * Confirmación antes de quitar un registro del tablero.
+ * La app no autoriza entregas; solo actualiza el aviso público.
+ */
+export function ReencontradoConfirmDialog({
+  open,
+  loading,
+  onCancel,
+  onConfirm,
+}: ReencontradoConfirmDialogProps) {
+  const [confirmed, setConfirmed] = useState(false);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+      role="presentation"
+      onClick={() => {
+        if (!loading) {
+          setConfirmed(false);
+          onCancel();
+        }
+      }}
+    >
+      <div
+        role="alertdialog"
+        aria-labelledby="reencontrado-title"
+        aria-describedby="reencontrado-desc"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border bg-card p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-amber-500/15 text-amber-600">
+          <Shield className="size-5" aria-hidden />
+        </div>
+        <h2 id="reencontrado-title" className="text-lg font-semibold">
+          Quitar del tablero
+        </h2>
+        <div
+          id="reencontrado-desc"
+          className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground"
+        >
+          <p>
+            Usa esta opción solo si el niño, niña o adolescente{" "}
+            <strong className="text-foreground">ya no está en tu resguardo</strong>{" "}
+            porque hubo un reencuentro seguro en el punto.
+          </p>
+          <p>
+            Esta plataforma <strong className="text-foreground">no entrega</strong>{" "}
+            a nadie. No debes entregar a una persona solo porque vio la ficha en
+            internet. La entrega debe ocurrir en el resguardo, con familiar
+            verificado y, de ser posible, con el respaldo de una organización
+            humanitaria o un órgano público (Defensa Civil, Protección Civil o
+            autoridades locales).
+          </p>
+        </div>
+        <div className="mt-4 flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
+          <Checkbox
+            id="reencontrado-confirm"
+            checked={confirmed}
+            disabled={loading}
+            onCheckedChange={(v) => setConfirmed(v === true)}
+          />
+          <Label
+            htmlFor="reencontrado-confirm"
+            className="cursor-pointer text-sm leading-snug font-normal"
+          >
+            Confirmo que el reencuentro ocurrió de forma segura y quiero quitar
+            este aviso del tablero público.
+          </Label>
+        </div>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+          <Button
+            type="button"
+            disabled={!confirmed || loading}
+            onClick={onConfirm}
+          >
+            {loading ? "Guardando…" : "Confirmar"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={() => {
+              setConfirmed(false);
+              onCancel();
+            }}
+          >
+            Cancelar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

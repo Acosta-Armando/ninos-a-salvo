@@ -4,21 +4,25 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { EntregaSeguraNotice } from '@/components/shared/EntregaSeguraNotice'
 import { OnlineOnlyButton, OnlineOnlyLink } from '@/components/offline/OnlineOnlyNav'
 import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner'
+import { MisRegistrosLink } from '@/components/home/MisRegistrosLink'
+import { RegistrosCounter } from '@/components/home/RegistrosCounter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Niños a Salvo — Reencuentro familiar',
   description: 'Plataforma humanitaria para el reencuentro de niños, niñas y adolescentes tras emergencias en Venezuela'
 }
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className='min-h-full bg-background'>
       <AppHeader />
 
       <main className='mx-auto max-w-3xl space-y-10 px-4 py-10'>
-        <section className='space-y-4 text-center'>
+        <section className='space-y-5 text-center'>
           <div className='mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
             <Heart className='size-8' />
           </div>
@@ -27,13 +31,15 @@ export default function HomePage() {
             Niños a Salvo conecta a familias con niños, niñas y adolescentes en puntos de resguardo después del doblete
             sísmico en Venezuela. Sin registro previo, sin contraseñas: solo ayuda rápida cuando más importa.
           </p>
-          <div className='flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center'>
+          <RegistrosCounter />
+          <div className='flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap sm:justify-center'>
             <OnlineOnlyButton href='/tablero' size='lg'>
               Ver tablero
             </OnlineOnlyButton>
             <Button asChild size='lg' variant='outline'>
               <Link href='/registro'>Registrar</Link>
             </Button>
+            <MisRegistrosLink />
           </div>
           <PwaInstallBanner />
         </section>

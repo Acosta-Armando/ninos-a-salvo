@@ -20,10 +20,10 @@ export class NinosDB extends Dexie {
       children:
         "id, sync_status, status, estado_vital, created_at, edad_anios, estado, ciudad, estado_resguardo",
     });
-    // v4: sin fotos del niño en IndexedDB
-    this.version(4).stores({
+    // v5: token de gestión y cierre pendiente
+    this.version(5).stores({
       children:
-        "id, sync_status, status, estado_vital, created_at, edad_anios, estado, ciudad, estado_resguardo",
+        "id, sync_status, status, estado_vital, created_at, edad_anios, estado, ciudad, estado_resguardo, close_status",
     });
   }
 }

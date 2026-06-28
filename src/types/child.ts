@@ -1,6 +1,7 @@
 export type SyncStatus = "pending" | "synced";
 export type ChildStatus = "Buscando" | "Reencontrado";
 export type EstadoVital = "ConVida" | "Fallecido";
+export type CloseStatus = "none" | "pending" | "synced";
 
 export interface LocalChild {
   id: string;
@@ -22,6 +23,9 @@ export interface LocalChild {
   estado_vital: EstadoVital;
   created_at: Date;
   updated_at?: Date;
+  /** Token para cerrar el registro desde este dispositivo. */
+  manage_token?: string;
+  close_status?: CloseStatus;
   retiro_cedula?: string;
   retiro_fullname?: string;
   retiro_parentesco?: string;
@@ -46,6 +50,8 @@ export interface ChildPayload {
   status: ChildStatus;
   estado_vital: EstadoVital;
   created_at: string;
+  /** Solo en la primera sincronización desde el dispositivo creador. */
+  manage_token?: string;
   retiro_cedula?: string | null;
   retiro_fullname?: string | null;
   retiro_parentesco?: string | null;

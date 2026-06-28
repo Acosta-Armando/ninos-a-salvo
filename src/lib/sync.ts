@@ -1,32 +1,11 @@
 /**
  * Sincronización offline → servidor.
  * Flujo: Dexie (pending) → POST /api/ninos → synced.
+ * Cierres: Dexie (close_status pending) → PATCH reencontrado → synced.
  */
 import { localDb } from "./db";
-import type { ChildPayload, LocalChild } from "@/types/child";
-
-/** Convierte registro local al payload que espera la API. */
-function toPayload(child: LocalChild): ChildPayload {
-  return {
-    id: child.id,
-    fullname: child.fullname ?? null,
-    edad_estimada: child.edad_estimada,
-    edad_anios: child.edad_anios,
-    nombre_padre: child.nombre_padre ?? null,
-    nombre_madre: child.nombre_madre ?? null,
-    nombre_familiar_buscado: child.nombre_familiar_buscado ?? null,
-    rasgos_particulares: child.rasgos_particulares ?? null,
-    estado: child.estado,
-    ciudad: child.ciudad,
-    estado_resguardo: child.estado_resguardo,
-    detalles_ubicacion: child.detalles_ubicacion,
-    informante_nombre: child.informante_nombre,
-    informante_telefono: child.informante_telefono,
-    status: child.status,
-    estado_vital: child.estado_vital,
-    created_at: child.created_at.toISOString(),
-  };
-}
+import { buildSyncPayload, readApiError } from "./syncPayload";
+import type { LocalChild } from "@/types/child";
 
 /** Sincroniza un solo registro pending; devuelve false si falla o no hay red. */
 async function syncChild(child: LocalChild): Promise<boolean> {
@@ -35,7 +14,11 @@ async function syncChild(child: LocalChild): Promise<boolean> {
   const fresh = await localDb.children.get(child.id);
   if (!fresh || fresh.sync_status !== "pending") return false;
 
-  const payload = toPayload(fresh);
+  const payload = buildSyncPayload(fresh);
+  if ("error" in payload) {
+    console.error(`Sync inválido para ${fresh.id}:`, payload.error);
+    return false;
+  }
 
   const response = await fetch("/api/ninos", {
     method: "POST",
@@ -44,13 +27,57 @@ async function syncChild(child: LocalChild): Promise<boolean> {
   });
 
   if (!response.ok) {
-    const error = await response.text();
+    const error = await readApiError(response);
     console.error(`Sync falló para ${fresh.id}:`, error);
     return false;
   }
 
   await localDb.children.update(fresh.id, {
     sync_status: "synced",
+    ...(fresh.status === "Reencontrado" && fresh.close_status === "pending"
+      ? { close_status: "synced" as const }
+      : {}),
+  });
+
+  return true;
+}
+
+async function syncClose(child: LocalChild): Promise<boolean> {
+  if (!navigator.onLine) return false;
+
+  const fresh = await localDb.children.get(child.id);
+  if (
+    !fresh ||
+    fresh.close_status !== "pending" ||
+    fresh.status !== "Reencontrado" ||
+    !fresh.manage_token
+  ) {
+    return false;
+  }
+
+  if (fresh.sync_status === "pending") {
+    const created = await syncChild(fresh);
+    if (!created) return false;
+  }
+
+  const response = await fetch(`/api/ninos/${fresh.id}/reencontrado`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ manage_token: fresh.manage_token }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      await localDb.children.update(fresh.id, { close_status: "synced" });
+      return true;
+    }
+    const error = await readApiError(response);
+    console.error(`Cierre falló para ${fresh.id}:`, error);
+    return false;
+  }
+
+  await localDb.children.update(fresh.id, {
+    close_status: "synced",
   });
 
   return true;
@@ -89,6 +116,38 @@ export async function syncPendingChildren(): Promise<{
   return { synced, failed };
 }
 
+async function syncPendingCloses(): Promise<{
+  synced: number;
+  failed: number;
+}> {
+  if (!navigator.onLine) {
+    return { synced: 0, failed: 0 };
+  }
+
+  const pendingClose = await localDb.children
+    .where("close_status")
+    .equals("pending")
+    .toArray();
+
+  let synced = 0;
+  let failed = 0;
+
+  for (const child of pendingClose) {
+    if (!navigator.onLine) break;
+
+    try {
+      const ok = await syncClose(child);
+      if (ok) synced++;
+      else failed++;
+    } catch (err) {
+      console.error(`Error cerrando ${child.id}:`, err);
+      failed++;
+    }
+  }
+
+  return { synced, failed };
+}
+
 let syncInProgress = false;
 
 /** Dispara sync si hay red y no hay otra en curso. */
@@ -97,6 +156,7 @@ export async function triggerSync(): Promise<void> {
   syncInProgress = true;
   try {
     await syncPendingChildren();
+    await syncPendingCloses();
   } finally {
     syncInProgress = false;
   }

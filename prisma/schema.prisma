@@ -50,6 +50,9 @@ model Child {
    */
   identity_search_tokens String[] @default([])
 
+  /** HMAC del token de gestión generado en el dispositivo al registrar. */
+  manage_token_hash String?
+
   @@index([status])
   @@index([estado_vital])
   @@index([created_at])

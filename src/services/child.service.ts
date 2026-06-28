@@ -20,11 +20,14 @@ import {
 import type { TableroSearchParams } from "@/types/tablero";
 import type { PublicChildCard, PublicChildDetail } from "@/types/public-child";
 import type { ChildPayload, RetiroPayload } from "@/types/child";
+import type { ChildStatusSnapshot } from "@/types/mis-registros";
+import { hashManageToken, verifyManageToken } from "@/lib/crypto";
 import { normalizeChildPhotoFields } from "@/lib/storageUrl";
 import {
   ChildAlreadyDeliveredError,
   ChildNotFoundError,
   InvalidChildPayloadError,
+  InvalidManageTokenError,
   InvalidRetiroPayloadError,
 } from "./errors";
 
@@ -54,20 +57,60 @@ function childPayloadToData(body: ChildPayload) {
     retiro_foto_parentesco_url: body.retiro_foto_parentesco_url,
   });
 
-  return encryptChildStringsForStorage(normalized);
+  let encrypted: ReturnType<typeof encryptChildStringsForStorage>;
+  try {
+    encrypted = encryptChildStringsForStorage(normalized);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error al cifrar el registro";
+    if (message.includes("AUTH_SECRET")) {
+      throw new InvalidChildPayloadError(
+        "El servidor no tiene AUTH_SECRET configurado",
+      );
+    }
+    throw error;
+  }
+
+  if (!encrypted.informante_nombre?.trim() || !encrypted.informante_telefono?.trim()) {
+    throw new InvalidChildPayloadError("Datos del informante incompletos");
+  }
+  if (!encrypted.rasgos_particulares?.trim()) {
+    throw new InvalidChildPayloadError("Rasgos particulares obligatorios");
+  }
+  if (!encrypted.detalles_ubicacion?.trim()) {
+    throw new InvalidChildPayloadError("Descripción de ubicación obligatoria");
+  }
+
+  return encrypted;
+}
+
+function childPayloadScalars(body: ChildPayload) {
+  return {
+    edad_estimada: body.edad_estimada.trim(),
+    edad_anios: Number(body.edad_anios),
+    estado: body.estado.trim(),
+    ciudad: body.ciudad.trim(),
+    estado_resguardo: body.estado_resguardo.trim(),
+    estado_vital: body.estado_vital,
+  };
 }
 
 /** Valida campos mínimos antes de upsert desde /api/ninos. */
 export function assertValidChildPayload(body: ChildPayload): void {
+  const edadAnios = Number(body.edad_anios);
+
   if (
     !body.id ||
-    !body.edad_estimada ||
-    body.edad_anios === undefined ||
-    !body.estado ||
-    !body.ciudad ||
-    !body.estado_resguardo ||
+    !body.edad_estimada?.trim() ||
+    !Number.isFinite(edadAnios) ||
+    !body.estado?.trim() ||
+    !body.ciudad?.trim() ||
+    !body.estado_resguardo?.trim() ||
     !body.estado_vital ||
-    !body.rasgos_particulares?.trim()
+    !body.rasgos_particulares?.trim() ||
+    !body.detalles_ubicacion?.trim() ||
+    !body.informante_nombre?.trim() ||
+    !body.informante_telefono?.trim()
   ) {
     throw new InvalidChildPayloadError();
   }
@@ -140,23 +183,127 @@ export async function getPublicChildById(
 }
 
 /** Crea o actualiza un niño (idempotente por UUID del cliente). */
-export async function upsertChild(body: ChildPayload): Promise<Child> {
+export async function upsertChild(
+  body: ChildPayload,
+): Promise<{ id: string; status: Child["status"] }> {
   assertValidChildPayload(body);
 
-  const data = childPayloadToData(body);
+  const data = childPayloadToData({
+    ...body,
+    edad_anios: Number(body.edad_anios),
+  });
+  const scalars = childPayloadScalars(body);
 
-  return prisma.child.upsert({
+  const existing = await prisma.child.findUnique({
+    where: { id: body.id },
+    select: { manage_token_hash: true, status: true },
+  });
+
+  const manageHash =
+    body.manage_token?.trim() &&
+    (!existing || !existing.manage_token_hash)
+      ? hashManageToken(body.manage_token.trim())
+      : undefined;
+
+  const status =
+    existing &&
+    body.status === "Reencontrado" &&
+    existing.status !== "Reencontrado"
+      ? existing.status
+      : (body.status ?? existing?.status ?? "Buscando");
+
+  const createdAt = body.created_at ? new Date(body.created_at) : undefined;
+  if (createdAt && Number.isNaN(createdAt.getTime())) {
+    throw new InvalidChildPayloadError("Fecha de registro inválida");
+  }
+
+  const stored = {
+    ...scalars,
+    ...data,
+    informante_nombre: data.informante_nombre!,
+    informante_telefono: data.informante_telefono!,
+    detalles_ubicacion: data.detalles_ubicacion!,
+    rasgos_particulares: data.rasgos_particulares!,
+  };
+
+  const child = await prisma.child.upsert({
     where: { id: body.id },
     create: {
       id: body.id,
-      ...data,
-      status: body.status ?? "Buscando",
-      created_at: body.created_at ? new Date(body.created_at) : undefined,
+      ...stored,
+      status,
+      manage_token_hash: manageHash,
+      created_at: createdAt,
     },
     update: {
-      ...data,
-      status: body.status,
+      ...stored,
+      status,
+      ...(manageHash ? { manage_token_hash: manageHash } : {}),
     },
+  });
+
+  return { id: child.id, status: child.status };
+}
+
+/** Total de registros en la plataforma (incluye entregados y fallecidos). */
+export async function getTotalRegistrosCount(): Promise<number> {
+  try {
+    return await prisma.child.count();
+  } catch {
+    return 0;
+  }
+}
+
+const MAX_STATUS_IDS = 50;
+
+/** Estado público de registros por ID (solo para refrescar mis-registros). */
+export async function getChildrenStatusByIds(
+  ids: string[],
+): Promise<ChildStatusSnapshot[]> {
+  const unique = [...new Set(ids.map((id) => id.trim()).filter(Boolean))].slice(
+    0,
+    MAX_STATUS_IDS,
+  );
+  if (unique.length === 0) return [];
+
+  const rows = await prisma.child.findMany({
+    where: { id: { in: unique } },
+    select: { id: true, status: true, estado_vital: true },
+  });
+
+  return rows;
+}
+
+/**
+ * Marca un registro como reencontrado (sale del tablero).
+ * Requiere el token de gestión del dispositivo que registró.
+ */
+export async function markChildReencontrado(
+  id: string,
+  manageToken: string,
+): Promise<Child> {
+  const token = manageToken?.trim();
+  if (!token) {
+    throw new InvalidManageTokenError();
+  }
+
+  const existing = await prisma.child.findUnique({ where: { id } });
+
+  if (!existing) {
+    throw new ChildNotFoundError(id);
+  }
+
+  if (existing.status === "Reencontrado") {
+    throw new ChildAlreadyDeliveredError();
+  }
+
+  if (!verifyManageToken(token, existing.manage_token_hash)) {
+    throw new InvalidManageTokenError();
+  }
+
+  return prisma.child.update({
+    where: { id },
+    data: { status: "Reencontrado" },
   });
 }
 

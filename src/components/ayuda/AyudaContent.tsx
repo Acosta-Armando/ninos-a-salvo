@@ -5,6 +5,7 @@ import {
   CameraOff,
   CloudUpload,
   List,
+  ListChecks,
   Search,
   Shield,
   Smartphone,
@@ -21,6 +22,7 @@ const sections = [
   { id: "fallecidos", label: "Registros de fallecidos" },
   { id: "sin-fotos", label: "Por qué no hay fotografías" },
   { id: "entrega-segura", label: "Por qué no se entregan por la app" },
+  { id: "mis-registros", label: "Mis registros en este dispositivo" },
   { id: "privacidad", label: "Privacidad de los nombres" },
 ] as const;
 
@@ -264,9 +266,35 @@ export function AyudaContent() {
           autorizar la entrega por sí sola.
         </p>
         <p>
-          Cuando un menor ya fue entregado de forma segura en el punto de
-          resguardo, el registro puede marcarse como reencontrado para que deje
-          de aparecer en el tablero.
+          Cuando un menor ya no está en tu resguardo tras un reencuentro seguro,
+          puedes quitar el aviso del tablero desde{" "}
+          <Link href="/mis-registros" className="text-primary hover:underline">
+            Mis registros
+          </Link>{" "}
+          (solo en el dispositivo donde registraste).
+        </p>
+      </HelpSection>
+
+      <HelpSection
+        id="mis-registros"
+        icon={ListChecks}
+        title="Mis registros en este dispositivo"
+      >
+        <p>
+          Si registraste desde este celular o tablet, verás el enlace{" "}
+          <strong className="text-foreground">Mis registros</strong> en el
+          inicio. Ahí aparecen solo los avisos creados en este aparato.
+        </p>
+        <p>
+          Para registros con vida aún en búsqueda, puedes usar{" "}
+          <strong className="text-foreground">Ya no está en mi resguardo</strong>{" "}
+          después de confirmar que el reencuentro fue seguro. Eso los saca del
+          tablero público; no sustituye la verificación en persona ni el respaldo
+          de una autoridad u organización.
+        </p>
+        <p>
+          Si no hay internet al cerrar, el cambio queda guardado y se sube al
+          recuperar señal.
         </p>
       </HelpSection>
 

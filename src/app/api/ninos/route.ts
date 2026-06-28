@@ -5,6 +5,11 @@ import {
 } from "@/services";
 import type { ChildPayload } from "@/types/child";
 
+function apiErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return "Error desconocido";
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ChildPayload;
@@ -15,9 +20,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    const message = apiErrorMessage(error);
     console.error("POST /api/ninos:", error);
+
     return NextResponse.json(
-      { error: "Error al guardar el registro" },
+      {
+        error:
+          process.env.NODE_ENV === "development"
+            ? message
+            : "Error al guardar el registro",
+      },
       { status: 500 },
     );
   }

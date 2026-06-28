@@ -57,7 +57,8 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
             </h2>
             <p id="offline-dialog-desc" className="mt-2 text-sm text-muted-foreground">
               Para acceder a esta sección debes reconectar a internet. Mientras
-              tanto puedes usar el inicio, el registro y la guía de ayuda sin conexión.
+              tanto puedes usar el inicio, el registro, la guía de ayuda y mis
+              registros sin conexión.
             </p>
             <Button className="mt-5 w-full" onClick={() => setOpen(false)}>
               Entendido

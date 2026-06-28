@@ -29,3 +29,10 @@ export class InvalidRetiroPayloadError extends Error {
     this.name = "InvalidRetiroPayloadError";
   }
 }
+
+export class InvalidManageTokenError extends Error {
+  constructor() {
+    super("No tienes permiso para modificar este registro");
+    this.name = "InvalidManageTokenError";
+  }
+}
