@@ -6,5 +6,5 @@ export function getDisplayName(
     return fullname.trim();
   }
   const suffix = id.replace(/-/g, "").slice(-4).toUpperCase();
-  return `Niño desconocido #${suffix}`;
+  return `Sin identificar #${suffix}`;
 }

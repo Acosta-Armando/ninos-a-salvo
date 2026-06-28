@@ -3,7 +3,7 @@ import {
   InvalidChildPayloadError,
   upsertChild,
 } from "@/services";
-import type { ChildPayload } from "@/lib/types";
+import type { ChildPayload } from "@/types/child";
 
 export async function POST(request: Request) {
   try {

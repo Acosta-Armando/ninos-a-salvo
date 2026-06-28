@@ -1,18 +1,15 @@
 # Niños a Salvo
 
-Plataforma humanitaria para el **reencuentro familiar** de niños tras emergencia sísmica en Venezuela. Permite registrar niños en puntos de resguardo (incluso sin internet), publicar fichas para que las familias los busquen y gestionar entregas seguras con verificación de identidad.
+Plataforma humanitaria para el **reencuentro familiar** de niños, niñas y adolescentes tras emergencia sísmica en Venezuela. Permite registrar en puntos de resguardo (incluso sin internet), publicar fichas para que las familias los busquen y gestionar entregas seguras con verificación de identidad.
 
 ## Características principales
 
-- **Registro offline-first** en campo: datos y fotos en IndexedDB (Dexie); sync automática al recuperar señal
-- **PWA** instalable con precache de inicio y registro (`/`, `/registro`)
-- **Tablero público** de niños con vida y listado de **fallecidos** para identificación
-- **Fallecidos sin fotografía**: registro y fichas sin imagen del niño (recuadro negro «Sin foto»)
+- **Registro offline-first** en campo: datos en IndexedDB (Dexie); sync automática al recuperar señal
+- **PWA** instalable con precache de inicio y registro
+- **Tablero descriptivo** (sin fotos de menores — LOPNNA): rasgos, edad, ubicación, contacto
 - **Búsqueda por nombre** sin exponer identidad en tarjetas ni fichas
-- **Rasgos particulares** obligatorios en todo registro
-- **UI offline**: barra de conexión, contador de pendientes sin sincronizar, enlaces al tablero bloqueados sin red
-- **Retiro seguro** con cédula, parentesco y tres fotos obligatorias
-- **Tema claro/oscuro**
+- **Cifrado** de datos sensibles con `AUTH_SECRET`
+- **Validación** del registro con Zod + react-hook-form
 
 ## Stack
 
@@ -36,9 +33,9 @@ Guía completa de configuración: [docs/configuracion.md](./docs/configuracion.m
 | Ruta | Descripción | Offline |
 |------|-------------|---------|
 | `/` | Landing e instalación PWA | **Sí** |
-| `/registro` | Alta de niño (vida o fallecido) | **Sí** (Dexie + foto local) |
-| `/tablero` | Niños con vida en búsqueda | No |
-| `/fallecidos` | Niños fallecidos en búsqueda | No |
+| `/registro` | Alta de registro (vida o fallecido) | **Sí** (Dexie) |
+| `/tablero` | Personas con vida en búsqueda | No |
+| `/fallecidos` | Fallecidos en búsqueda | No |
 | `/ninos/[id]` | Ficha pública | No |
 
 Sin conexión solo puedes usar inicio y registro. Tablero, fallecidos y fichas requieren internet (la app lo indica al intentar entrar).
@@ -48,7 +45,7 @@ Sin conexión solo puedes usar inicio y registro. Tablero, fallecidos y fichas r
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | `POST` | `/api/ninos` | Upsert desde sincronización offline |
-| `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega del niño |
+| `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega |
 
 ## Documentación
 
@@ -67,22 +64,31 @@ Sin conexión solo puedes usar inicio y registro. Tablero, fallecidos y fichas r
 - [Registro offline y sincronización](./docs/flujos/registro-y-sincronizacion.md) — Dexie, fotos, sync global
 - [Tablero y búsqueda](./docs/flujos/tablero.md)
 - [Fallecidos](./docs/flujos/fallecidos.md)
-- [Ficha pública del niño](./docs/flujos/ficha-publica.md)
+- [Ficha pública](./docs/flujos/ficha-publica.md)
 - [Retiro seguro](./docs/flujos/retiro-seguro.md)
 
 ## Estructura del proyecto
 
 ```
 src/
-├── app/           # Rutas y API
-├── components/    # UI (registro, tablero, PWA, offline)
-├── services/      # Lógica de negocio y acceso Prisma
-├── hooks/         # useOnlineStatus, usePendingSyncCount
-├── lib/           # DB, sync, storage, offlineRoutes
-└── data/          # Estados y municipios de Venezuela
-prisma/            # Schema y migraciones
-docs/              # Documentación detallada
-public/            # manifest.json, sw.js v3, iconos
+├── app/              # Rutas y API
+├── components/
+│   ├── ui/           # shadcn
+│   ├── layout/       # Header, footer, tema
+│   ├── shared/       # Componentes multi-ruta
+│   ├── registro/     # /registro
+│   ├── tablero/      # /tablero, /fallecidos
+│   ├── ninos/        # /ninos/[id]
+│   ├── offline/      # PWA offline global
+│   └── pwa/          # Instalación
+├── types/            # Interfaces y tipos (@/types)
+├── hooks/            # Hooks React
+├── services/         # Lógica de negocio + Prisma
+├── lib/              # Utilidades, Zod, cifrado, sync
+└── data/             # Estados y municipios
+prisma/               # Schema y migraciones
+docs/                 # Documentación
+public/               # manifest, sw.js v4, iconos
 ```
 
 ## Scripts útiles
@@ -98,7 +104,7 @@ npm run icons:pwa    # Generar iconos PWA
 
 ## Privacidad (resumen)
 
-El nombre del niño y de sus familiares se almacena para **filtrar en el buscador**, pero **nunca** aparece en el tablero ni en la ficha pública. Los niños fallecidos no llevan fotografía en la plataforma. Detalle en [docs/privacidad.md](./docs/privacidad.md).
+Los niños, niñas y adolescentes **no llevan fotografía** en la plataforma (LOPNNA). El nombre se almacena cifrado para búsqueda interna pero **nunca** aparece en el tablero ni en la ficha pública.
 
 ## Licencia
 

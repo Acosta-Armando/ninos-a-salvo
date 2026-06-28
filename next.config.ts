@@ -10,13 +10,15 @@ function getSupabaseHostname(): string {
   }
 }
 
+const bucketType = process.env.NEXT_PUBLIC_BUCKET_TYPE ?? "public";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: getSupabaseHostname(),
-        pathname: "/storage/v1/object/public/**",
+        pathname: `/storage/v1/object/${bucketType}/**`,
       },
     ],
   },

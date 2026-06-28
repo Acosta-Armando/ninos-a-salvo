@@ -1,13 +1,13 @@
 # Flujo: Retiro seguro
 
-**Ruta:** `/ninos/[id]` (solo niños `ConVida` y `Buscando`)  
+**Ruta:** `/ninos/[id]` (solo `ConVida` y `Buscando`)  
 **Componente:** `RetiroForm`  
 **API:** `PATCH /api/ninos/[id]/retiro`  
 **Servicio:** `registerChildRetiro`
 
 ## Objetivo
 
-Registrar la entrega del niño a un familiar o tutor legítimo y **bloquear** el registro para evitar entregas fraudulentas.
+Registrar la entrega a un familiar o tutor legítimo y **bloquear** el registro para evitar entregas fraudulentas.
 
 ## Requisitos
 
@@ -15,7 +15,7 @@ Registrar la entrega del niño a un familiar o tutor legítimo y **bloquear** el
 
 - Cédula de quien retira
 - Nombre completo
-- Parentesco con el niño
+- Parentesco
 - Teléfono
 
 ### Tres fotos obligatorias
@@ -54,8 +54,8 @@ sequenceDiagram
 
 ## Tras el retiro
 
-- El niño **desaparece** del tablero (`status` ya no es `Buscando`).
-- La ficha muestra el bloque «Niño entregado a su familia» con auditoría del retiro.
+- El registro **desaparece** del tablero (`status` ya no es `Buscando`).
+- La ficha muestra el bloque «Reencuentro familiar» con auditoría del retiro.
 - No se puede volver a registrar retiro.
 
 ## Offline

@@ -1,7 +1,7 @@
 {
   "name": "Niños a Salvo",
   "short_name": "Niños a Salvo",
-  "description": "Reencuentro familiar tras emergencia sísmica en Venezuela",
+  "description": "Reencuentro familiar de niños, niñas y adolescentes tras emergencia sísmica en Venezuela",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fafafa",

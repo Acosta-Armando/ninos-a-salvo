@@ -2,7 +2,7 @@
 import { Download, ExternalLink, Loader2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { usePwaInstall } from "@/components/PwaInstallProvider";
+import { usePwaInstall } from "@/components/pwa/PwaInstallProvider";
 
 interface PwaInstallButtonProps {
   installLabel?: string;

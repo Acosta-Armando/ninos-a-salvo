@@ -6,35 +6,39 @@
 
 | Documento | Descripción |
 |-----------|-------------|
-| [Arquitectura](./arquitectura.md) | Stack, capas y cómo interactúan Prisma, Supabase y Dexie |
-| [Configuración](./configuracion.md) | Variables de entorno, base de datos, bucket y despliegue |
-| [Privacidad](./privacidad.md) | Qué datos se guardan, buscan y muestran en público |
+| [Arquitectura](./arquitectura.md) | Stack, capas, estructura de carpetas |
+| [Configuración](./configuracion.md) | Variables de entorno, BD, Storage |
+| [Privacidad](./privacidad.md) | Qué se guarda, busca y muestra |
 
 ## Flujos de la aplicación
 
-| Flujo | Ruta principal | Documento |
-|-------|----------------|-------------|
-| Inicio e instalación PWA | `/` | [PWA](./flujos/pwa-instalacion.md) |
-| Conexión, offline y navegación | Global | [Conexión y offline](./flujos/conexion-y-offline.md) |
-| Registro offline de un niño | `/registro` | [Registro y sincronización](./flujos/registro-y-sincronizacion.md) |
-| Tablero (niños con vida) | `/tablero` | [Tablero y búsqueda](./flujos/tablero.md) |
-| Registro de fallecidos | `/fallecidos` | [Fallecidos](./flujos/fallecidos.md) |
-| Ficha pública del niño | `/ninos/[id]` | [Ficha pública](./flujos/ficha-publica.md) |
-| Retiro seguro | `/ninos/[id]` | [Retiro](./flujos/retiro-seguro.md) |
+| Flujo | Ruta | Componentes |
+|-------|------|-------------|
+| PWA | `/` | `components/pwa/*` |
+| Offline global | Layout | `components/offline/*` |
+| Registro | `/registro` | `components/registro/*` |
+| Tablero | `/tablero` | `components/tablero/*` |
+| Fallecidos | `/fallecidos` | `components/tablero/*` |
+| Ficha | `/ninos/[id]` | `components/shared/*`, `components/ninos/*` |
+
+Documentos detallados en [flujos/](./flujos/).
 
 ## API
 
 | Método | Ruta | Uso |
 |--------|------|-----|
-| `POST` | `/api/ninos` | Upsert desde sincronización offline |
-| `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega del niño a su familia |
+| `POST` | `/api/ninos` | Upsert desde sync offline |
+| `PATCH` | `/api/ninos/[id]/retiro` | Registrar entrega |
+| `POST` | `/api/ninos/[id]/retiro/foto` | Subir foto de retiro cifrada |
+| `GET` | `/api/media/[...path]` | Servir foto de retiro descifrada |
 
 ## Resumen offline
 
 | Ruta | Offline |
 |------|---------|
-| `/` | Sí |
-| `/registro` | Sí (Dexie + foto local) |
+| `/`, `/registro` | Sí |
 | `/tablero`, `/fallecidos`, `/ninos/[id]` | No |
 
-Al recuperar internet, `SyncProvider` sube fotos pendientes a Storage y sincroniza con `POST /api/ninos`. La barra superior muestra cuántos registros faltan por sincronizar mientras no hay red.
+## Tipos compartidos
+
+Definidos en `src/types/` — importar con `@/types` o `@/types/child`, etc.

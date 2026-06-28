@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
-import type { EstadoVital } from "../../generated/client";
-import { AppHeader } from "@/components/AppHeader";
-import { ChildCard } from "@/components/ChildCard";
-import { Pagination } from "@/components/Pagination";
-import { TableroNavTabs } from "@/components/TableroNavTabs";
+import type { EstadoVital } from "../../../generated/client";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { ChildCard } from "@/components/tablero/ChildCard";
+import { Pagination } from "@/components/tablero/Pagination";
+import { TableroNavTabs } from "@/components/tablero/TableroNavTabs";
 import { Button } from "@/components/ui/button";
-import { PAGE_SIZE, parsePage, type TableroSearchParams } from "@/lib/tablero";
+import { PAGE_SIZE, parsePage } from "@/lib/tablero";
+import type { TableroSearchParams } from "@/types/tablero";
 import { listTableroChildren } from "@/services";
 import { TableroFilters } from "./TableroFilters";
 
@@ -53,7 +54,7 @@ export async function TableroPageContent({
           <Button asChild size="lg" className="gap-2">
             <Link href="/registro">
               <Plus className="size-4" />
-              Registrar niño
+              Registrar
             </Link>
           </Button>
         </div>
@@ -66,7 +67,7 @@ export async function TableroPageContent({
           <div className="rounded-xl border bg-card p-12 text-center">
             <p className="text-lg text-muted-foreground">{emptyMessage}</p>
             <Button asChild variant="link" className="mt-4">
-              <Link href="/registro">Registrar un niño</Link>
+              <Link href="/registro">Registrar</Link>
             </Button>
           </div>
         ) : (

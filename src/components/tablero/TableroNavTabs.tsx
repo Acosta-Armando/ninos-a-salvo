@@ -1,5 +1,5 @@
 "use client";
-import { OnlineOnlyButton } from "@/components/OnlineOnlyNav";
+import { OnlineOnlyButton } from "@/components/offline/OnlineOnlyNav";
 
 interface TableroNavTabsProps {
   esFallecidos: boolean;

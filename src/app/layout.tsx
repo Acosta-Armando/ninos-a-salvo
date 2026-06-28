@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
-import { ConnectionStatusBar } from "@/components/ConnectionStatusBar";
-import { PendingSyncBar } from "@/components/PendingSyncBar";
-import { OfflineNavProvider } from "@/components/OfflineNavProvider";
-import { OfflinePrecache } from "@/components/OfflinePrecache";
-import { ThemeProvider, THEME_COOKIE } from "@/components/ThemeProvider";
-import { PwaInstallProvider } from "@/components/PwaInstallProvider";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SyncProvider } from "@/components/SyncProvider";
+import { ConnectionStatusBar } from "@/components/offline/ConnectionStatusBar";
+import { PendingSyncBar } from "@/components/offline/PendingSyncBar";
+import { OfflineNavProvider } from "@/components/offline/OfflineNavProvider";
+import { OfflinePrecache } from "@/components/offline/OfflinePrecache";
+import { SyncProvider } from "@/components/offline/SyncProvider";
+import { ThemeProvider, THEME_COOKIE } from "@/components/layout/ThemeProvider";
+import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,7 +19,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Niños a Salvo",
   description:
-    "Reencuentro familiar de niños tras emergencia sísmica en Venezuela",
+    "Reencuentro familiar de niños, niñas y adolescentes tras emergencia sísmica en Venezuela",
   manifest: "/manifest.json",
   icons: {
     icon: [

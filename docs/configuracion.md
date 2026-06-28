@@ -19,8 +19,21 @@ cp .env.example .env.local
 | `DIRECT_URL` | Conexión directa (puerto **5432**) — migraciones Prisma |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima para Storage desde el navegador |
+| `NEXT_PUBLIC_BUCKET_NAME` | Nombre del bucket (ej. `ninos-fotos`) |
+| `NEXT_PUBLIC_BUCKET_TYPE` | Tipo de acceso del bucket (normalmente `public`) |
+| `AUTH_SECRET` | Cifrado AES-256-GCM de datos sensibles y fotos de retiro |
 
 > Si la contraseña contiene `/` u otros caracteres especiales, codifícalos en la URL (ej. `/` → `%2F`).
+
+### Rutas de fotos de retiro en la base de datos
+
+En PostgreSQL solo se guardan rutas relativas de fotos de **retiro** (adultos), por ejemplo:
+
+`26072e4c-61c1-408e-8350-e98b272b6817/retiro-cedula.jpg`
+
+La URL se sirve vía `/api/media/...` (descifrado con `AUTH_SECRET`).
+
+Aplica a `retiro_foto_cedula_url`, `retiro_foto_persona_url` y `retiro_foto_parentesco_url`.
 
 ## Base de datos
 
@@ -43,21 +56,22 @@ npm run db:studio
 Crear manualmente en Supabase Dashboard:
 
 1. **Storage → New bucket**
-2. Nombre: `ninos-fotos`
+2. Nombre: valor de `NEXT_PUBLIC_BUCKET_NAME` (por defecto `ninos-fotos`)
 3. **Public bucket**: activado (las URLs públicas lo requieren)
 4. Políticas RLS para rol `anon`:
    - `INSERT` en `ninos-fotos`
    - `SELECT` en `ninos-fotos`
    - `UPDATE` en `ninos-fotos` (necesario por `upsert: true`)
 
-### Rutas de archivos
+### Rutas de archivos (valor guardado en BD)
 
 | Archivo | Ruta en el bucket |
 |---------|-------------------|
-| Foto del niño (registro, solo **Con vida**) | `{childId}/foto.jpg` |
 | Cédula (retiro) | `{childId}/retiro-cedula.jpg` |
 | Persona que retira | `{childId}/retiro-persona.jpg` |
 | Documento de parentesco | `{childId}/retiro-parentesco.jpg` |
+
+(Las fotos de retiro se cifran en el servidor; no hay fotos de menores en el bucket.)
 
 ## Desarrollo local
 
@@ -79,8 +93,7 @@ Configura las mismas variables de entorno en el hosting (Vercel, etc.).
 
 ## Modo offline (resumen)
 
-- El registro guarda datos en **IndexedDB** (Dexie); las fotos se almacenan como `foto_data` hasta sincronizar.
-- La subida a Storage ocurre solo con red, desde el navegador (`src/lib/sync.ts`), con timeout de 25 s.
-- Los niños **fallecidos** no generan `foto.jpg` en el bucket.
+- El registro guarda datos en **IndexedDB** (Dexie).
+- Las fotos de retiro se suben solo con red, desde el navegador (`src/lib/sync.ts` o formulario de retiro).
 - Rutas offline de la PWA: `/` y `/registro` (ver [Conexión y offline](./flujos/conexion-y-offline.md)).
 

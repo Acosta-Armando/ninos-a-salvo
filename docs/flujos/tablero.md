@@ -1,55 +1,38 @@
-# Flujo: Tablero de niños con vida
+# Flujo: Tablero (con vida)
 
 **Ruta:** `/tablero`  
-**Componentes:** `TableroPageContent`, `TableroFilters`, `TableroNavTabs`, `ChildCard`, `Pagination`  
-**Servicio:** `listTableroChildren`
+**Componentes:** `components/tablero/*`  
+**Servicio:** `listTableroChildren`  
+**Tipos:** `types/tablero.ts`
 
 ## Criterios de listado
-
-Solo aparecen niños con:
 
 - `status = Buscando`
 - `estado_vital = ConVida`
 
-Los ya entregados (`Reencontrado`) dejan de mostrarse aquí.
-
 ## Búsqueda y filtros
 
-Parámetros URL (`TableroSearchParams`):
+Parámetros URL (`TableroSearchParams` en `types/tablero.ts`):
 
 | Parámetro | Descripción |
 |-----------|-------------|
-| `q` | Nombre del niño, padre, madre o familiar buscado (no se muestra en resultados) |
+| `q` | Nombre de la persona/familia (tokens cifrados; no visible en UI) |
 | `identidad` | `todos` \| `con_nombre` \| `sin_nombre` |
 | `estado` | Estado de Venezuela |
 | `ciudad` | Municipio |
-| `edad` | Rango: `0-2`, `3-5`, `6-8`, `8-10`, `10+` |
+| `edad` | Rango sobre `edad_anios` |
 | `page` | Paginación (20 por página) |
 
-```mermaid
-flowchart LR
-  U[Familia / voluntario] --> F[Filtros en URL]
-  F --> S[listTableroChildren]
-  S --> W[buildTableroWhere]
-  W --> DB[(PostgreSQL)]
-  DB --> C[ChildCard sin nombre]
-  C --> L[/ninos/id]
-```
+## Tarjeta pública (`tablero/ChildCard`)
 
-## Tarjeta pública (`ChildCard`)
+- Edad, **rasgos**, ubicación, resguardo, teléfono del informante.
+- **Sin fotografías** de menores.
+- **No muestra** nombres de la persona registrada ni familiares.
 
-**Niños con vida** (`esFallecido={false}`):
+Sin conexión: tarjeta atenuada; diálogo al pulsar.
 
-- Foto, edad estimada, ubicación, resguardo, descripción breve, teléfono del informante.
+## Navegación
 
-**No muestra:** nombre del niño ni de familiares.
-
-Sin conexión: la tarjeta se ve atenuada; al pulsar, diálogo pidiendo reconectar (no navega a la ficha).
-
-## Navegación relacionada
-
-- Pestañas **Con vida** / **Fallecidos** (`TableroNavTabs`) — deshabilitadas offline hacia la otra lista si no hay red.
-- **Registrar niño** → `/registro` (disponible offline).
-- Clic en tarjeta → [Ficha pública](./ficha-publica.md) (requiere conexión).
-
-Ver también [Fallecidos](./fallecidos.md) para tarjetas sin fotografía.
+- Pestañas `TableroNavTabs` → `/tablero` \| `/fallecidos`
+- Registrar → `/registro`
+- Clic → [Ficha pública](./ficha-publica.md)

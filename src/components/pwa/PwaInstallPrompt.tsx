@@ -1,8 +1,8 @@
 "use client";
 import { Smartphone, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { PwaInstallButton } from "@/components/PwaInstallButton";
-import { usePwaInstall } from "@/components/PwaInstallProvider";
+import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
+import { usePwaInstall } from "@/components/pwa/PwaInstallProvider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,7 +44,7 @@ export function PwaInstallPrompt() {
               </CardTitle>
               <CardDescription className="mt-1">
                 Acceso rápido desde la pantalla de inicio, ideal para registrar
-                niños en campo con conexión limitada.
+                niños, niñas y adolescentes en campo con conexión limitada.
               </CardDescription>
             </div>
           </div>

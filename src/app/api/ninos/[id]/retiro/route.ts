@@ -5,7 +5,7 @@ import {
   InvalidRetiroPayloadError,
   registerChildRetiro,
 } from "@/services";
-import type { RetiroPayload } from "@/lib/types";
+import type { RetiroPayload } from "@/types/child";
 
 export async function PATCH(
   request: Request,

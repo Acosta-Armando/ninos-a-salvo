@@ -1,30 +1,12 @@
 /**
  * Sincronización offline → servidor.
- * Flujo: Dexie (pending + foto local) → Supabase Storage → POST /api/ninos → synced.
+ * Flujo: Dexie (pending) → POST /api/ninos → synced.
  */
-import { resolveChildPhotoBlob } from "./childPhoto";
 import { localDb } from "./db";
-import { uploadPhoto } from "./supabaseStorage";
-import type { ChildPayload, LocalChild } from "./types";
-
-/** Sube la foto del niño si aún está guardada localmente. */
-async function uploadChildPhoto(
-  child: LocalChild,
-): Promise<{ foto_url?: string }> {
-  if (!navigator.onLine) return {};
-
-  const blob = resolveChildPhotoBlob(child);
-  if (!blob) return {};
-
-  const foto_url = await uploadPhoto(`${child.id}/foto.jpg`, blob);
-  return { foto_url };
-}
+import type { ChildPayload, LocalChild } from "@/types/child";
 
 /** Convierte registro local al payload que espera la API. */
-function toPayload(
-  child: LocalChild,
-  urls: { foto_url?: string },
-): ChildPayload {
+function toPayload(child: LocalChild): ChildPayload {
   return {
     id: child.id,
     fullname: child.fullname ?? null,
@@ -38,7 +20,6 @@ function toPayload(
     ciudad: child.ciudad,
     estado_resguardo: child.estado_resguardo,
     detalles_ubicacion: child.detalles_ubicacion,
-    foto_url: urls.foto_url ?? child.foto_url ?? null,
     informante_nombre: child.informante_nombre,
     informante_telefono: child.informante_telefono,
     status: child.status,
@@ -54,8 +35,7 @@ async function syncChild(child: LocalChild): Promise<boolean> {
   const fresh = await localDb.children.get(child.id);
   if (!fresh || fresh.sync_status !== "pending") return false;
 
-  const urls = await uploadChildPhoto(fresh);
-  const payload = toPayload(fresh, urls);
+  const payload = toPayload(fresh);
 
   const response = await fetch("/api/ninos", {
     method: "POST",
@@ -71,10 +51,6 @@ async function syncChild(child: LocalChild): Promise<boolean> {
 
   await localDb.children.update(fresh.id, {
     sync_status: "synced",
-    foto_url: urls.foto_url ?? fresh.foto_url,
-    foto_blob: undefined,
-    foto_data: undefined,
-    foto_mime: undefined,
   });
 
   return true;

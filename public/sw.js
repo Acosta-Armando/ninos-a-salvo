@@ -2,7 +2,7 @@
  * Service worker — offline para / y /registro.
  * El registro guarda datos en IndexedDB (Dexie); la sync a /api/ninos requiere red.
  */
-const CACHE_VERSION = 'v3'
+const CACHE_VERSION = 'v4'
 const SHELL_CACHE = `ninos-a-salvo-shell-${CACHE_VERSION}`
 const RUNTIME_CACHE = `ninos-a-salvo-runtime-${CACHE_VERSION}`
 
@@ -28,8 +28,12 @@ function isOfflineRoute(url) {
   return url.origin === self.location.origin && OFFLINE_PATHS.has(normalizePath(url.pathname))
 }
 
-function isStaticAsset(url) {
-  return url.pathname.startsWith('/_next/') || /\.(js|css|woff2?|ico|svg|png|jpg|jpeg|webp|json)$/i.test(url.pathname)
+function isNextAsset(url) {
+  return url.pathname.startsWith('/_next/')
+}
+
+function isImmutableAsset(url) {
+  return /\.(woff2?|ico|svg|png|jpg|jpeg|webp|json)$/i.test(url.pathname)
 }
 
 function isRscRequest(request, url) {
@@ -45,7 +49,7 @@ function isApiRequest(url) {
 }
 
 function shouldHandleOffline(request, url) {
-  return isOfflineRoute(url) || isStaticAsset(url) || isRscRequest(request, url)
+  return isOfflineRoute(url) || isNextAsset(url) || isRscRequest(request, url)
 }
 
 async function cachePut(request, response) {
@@ -106,6 +110,19 @@ async function networkFirstOffline(request) {
   }
 }
 
+/** Red primero para chunks de Next: evita JS obsoleto tras despliegues o cambios en dev. */
+async function networkFirstNextAsset(request) {
+  try {
+    const response = await fetch(request)
+    await cachePut(request, response)
+    return response
+  } catch {
+    const cached = await caches.match(request)
+    if (cached) return cached
+    return new Response('', { status: 504 })
+  }
+}
+
 async function cacheFirstStatic(request) {
   const cached = await caches.match(request)
   if (cached) return cached
@@ -121,14 +138,12 @@ async function cacheFirstStatic(request) {
 
 async function precacheOfflineRoutes() {
   const shell = await caches.open(SHELL_CACHE)
-  const runtime = await caches.open(RUNTIME_CACHE)
   const origin = self.location.origin
 
   for (const path of OFFLINE_PATHS) {
     try {
       const absoluteUrl = new URL(path, origin).toString()
 
-      // 1. Guardar la estructura HTML limpia de la ruta
       const responseHtml = await fetch(absoluteUrl, {
         credentials: 'same-origin',
         cache: 'no-store'
@@ -138,7 +153,6 @@ async function precacheOfflineRoutes() {
         await shell.put(new Request(path, { method: 'GET' }), responseHtml.clone())
       }
 
-      // 2. Guardar la versión RSC para evitar fallos en la navegación interna de Next.js
       const rscRequest = new Request(absoluteUrl, {
         headers: { rsc: '1' }
       })
@@ -146,7 +160,7 @@ async function precacheOfflineRoutes() {
       if (responseRsc.ok) {
         await shell.put(rscRequest, responseRsc)
       }
-    } catch (e) {
+    } catch {
       // Error silencioso en fallo de red local durante el proceso
     }
   }
@@ -156,10 +170,10 @@ async function precacheOfflineRoutes() {
       const absoluteUrl = new URL(url, origin).toString()
       const response = await fetch(absoluteUrl, { cache: 'no-store' })
       if (response.ok) {
-        const cache = OFFLINE_PATHS.has(normalizePath(new URL(url, origin).pathname)) ? shell : runtime
+        const cache = OFFLINE_PATHS.has(normalizePath(new URL(url, origin).pathname)) ? shell : await caches.open(RUNTIME_CACHE)
         await cache.put(url, response.clone())
       }
-    } catch (e) {
+    } catch {
       // Ignorar fallos individuales de assets estáticos
     }
   }
@@ -204,9 +218,13 @@ self.addEventListener('fetch', (event) => {
 
   if (isApiRequest(url)) return
 
-  // CORRECCIÓN: Colocamos el filtro de estáticos prioritario arriba.
-  // Si es un static asset, resolvemos con Cache First de inmediato sin pasar por Network First.
-  if (isStaticAsset(url)) {
+  // Chunks de Next: red primero para no servir bundles desactualizados (p. ej. lucide-react).
+  if (isNextAsset(url)) {
+    event.respondWith(networkFirstNextAsset(request))
+    return
+  }
+
+  if (isImmutableAsset(url)) {
     event.respondWith(cacheFirstStatic(request))
     return
   }

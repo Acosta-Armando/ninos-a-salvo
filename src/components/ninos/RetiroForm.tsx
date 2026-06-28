@@ -6,8 +6,8 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { RetiroPayload } from "@/lib/types";
-import { uploadRetiroPhoto } from "@/lib/supabaseStorage";
+import type { RetiroPayload } from "@/types/child";
+import { uploadRetiroPhotoViaApi } from "@/lib/photoUploadClient";
 
 interface RetiroFormProps {
   childId: string;
@@ -134,9 +134,9 @@ export function RetiroForm({ childId, onSuccess }: RetiroFormProps) {
     setLoading(true);
     try {
       const [cedulaUrl, personaUrl, parentescoUrl] = await Promise.all([
-        uploadRetiroPhoto(childId, fotoCedula, "cedula"),
-        uploadRetiroPhoto(childId, fotoPersona, "persona"),
-        uploadRetiroPhoto(childId, fotoParentesco, "parentesco"),
+        uploadRetiroPhotoViaApi(childId, fotoCedula, "cedula"),
+        uploadRetiroPhotoViaApi(childId, fotoPersona, "persona"),
+        uploadRetiroPhotoViaApi(childId, fotoParentesco, "parentesco"),
       ]);
 
       const payload: RetiroPayload = {
@@ -172,7 +172,7 @@ export function RetiroForm({ childId, onSuccess }: RetiroFormProps) {
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Para retirar al niño se requiere identificación de quien retira y
+        Para retirar al niño, niña o adolescente se requiere identificación de quien retira y
         documento que acredite el parentesco.
       </p>
 
@@ -211,7 +211,7 @@ export function RetiroForm({ childId, onSuccess }: RetiroFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="retiro-parentesco">Parentesco con el niño</Label>
+        <Label htmlFor="retiro-parentesco">Parentesco</Label>
         <Input
           id="retiro-parentesco"
           value={parentesco}

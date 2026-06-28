@@ -1,16 +1,16 @@
-import { AppHeader } from "@/components/AppHeader";
-import { RegistroForm } from "@/components/RegistroForm";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { RegistroForm } from "@/components/registro/RegistroForm";
 
 export const metadata = {
-  title: "Registrar niño — Niños a Salvo",
-  description: "Registro offline-first de niños en puntos de resguardo",
+  title: "Registrar — Niños a Salvo",
+  description: "Registro offline-first de niños, niñas y adolescentes en puntos de resguardo",
 };
 
 export default function RegistroPage() {
   return (
     <div className="min-h-full bg-background">
       <AppHeader
-        title="Registrar niño"
+        title="Registrar"
         subtitle="Guarda el registro aunque no haya internet"
         backHref="/"
         backLabel="← Inicio"

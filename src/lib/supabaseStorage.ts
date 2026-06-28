@@ -1,16 +1,15 @@
 /**
  * Cliente de Supabase Storage para fotos.
- * Bucket esperado: ninos-fotos (público, políticas INSERT/SELECT/UPDATE para anon).
+ * En BD solo se guarda la ruta relativa; la URL pública se arma en storageUrl.ts.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { getStorageBucketName } from "./storageUrl";
 import { withTimeout } from "./withTimeout";
 
 const UPLOAD_TIMEOUT_MS = 25_000;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-
-export const STORAGE_BUCKET = "ninos-fotos";
 
 let client: SupabaseClient | null = null;
 
@@ -26,26 +25,21 @@ function getClient(): SupabaseClient {
   return client;
 }
 
-export const supabaseStorage = {
-  storage: {
-    from: (bucket: string) => getClient().storage.from(bucket),
-  },
-};
+function getBucket() {
+  return getClient().storage.from(getStorageBucketName());
+}
 
+/** Sube un archivo y devuelve la ruta relativa dentro del bucket (para guardar en BD). */
 export async function uploadPhoto(
   path: string,
   blob: Blob,
   contentType = "image/jpeg",
 ): Promise<string> {
-  const upload = supabaseStorage.storage.from(STORAGE_BUCKET).upload(
-    path,
-    blob,
-    {
-      contentType,
-      upsert: true,
-      cacheControl: "3600",
-    },
-  );
+  const upload = getBucket().upload(path, blob, {
+    contentType,
+    upsert: true,
+    cacheControl: "3600",
+  });
 
   const { error } = await withTimeout(
     upload,
@@ -57,11 +51,7 @@ export async function uploadPhoto(
     throw new Error(`Error al subir foto: ${error.message}`);
   }
 
-  const { data } = supabaseStorage.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(path);
-
-  return data.publicUrl;
+  return path;
 }
 
 /** Tipos de foto exigidos en el retiro seguro. */

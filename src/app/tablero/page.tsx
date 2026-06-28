@@ -1,11 +1,11 @@
-import { TableroPageContent } from "@/components/TableroPageContent";
-import type { TableroSearchParams } from "@/lib/tablero";
+import { TableroPageContent } from "@/components/tablero/TableroPageContent";
+import type { TableroSearchParams } from "@/types/tablero";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Tablero — Niños a Salvo",
-  description: "Niños en resguardo buscando a su familia",
+  description: "Niños, niñas y adolescentes en resguardo buscando a su familia",
 };
 
 interface PageProps {
@@ -20,9 +20,9 @@ export default async function TableroPage({ searchParams }: PageProps) {
       estadoVital="ConVida"
       basePath="/tablero"
       params={params}
-      title="Tablero de niños"
-      subtitle="Niños con vida en puntos de resguardo"
-      emptyMessage="No hay niños que coincidan con tu búsqueda."
+      title="Tablero"
+      subtitle="Niños, niñas y adolescentes con vida en puntos de resguardo"
+      emptyMessage="No hay registros que coincidan con tu búsqueda."
     />
   );
 }

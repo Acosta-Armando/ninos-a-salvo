@@ -1,11 +1,11 @@
-import { TableroPageContent } from "@/components/TableroPageContent";
-import type { TableroSearchParams } from "@/lib/tablero";
+import { TableroPageContent } from "@/components/tablero/TableroPageContent";
+import type { TableroSearchParams } from "@/types/tablero";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Fallecidos — Niños a Salvo",
-  description: "Registro de niños fallecidos para identificación familiar",
+  description: "Registro de niños, niñas y adolescentes fallecidos para identificación familiar",
 };
 
 interface PageProps {
@@ -20,9 +20,9 @@ export default async function FallecidosPage({ searchParams }: PageProps) {
       estadoVital="Fallecido"
       basePath="/fallecidos"
       params={params}
-      title="Niños fallecidos"
+      title="Fallecidos"
       subtitle="Para que sus familias puedan identificarlos"
-      emptyMessage="No hay registros de niños fallecidos con estos filtros."
+      emptyMessage="No hay registros de fallecidos con estos filtros."
     />
   );
 }

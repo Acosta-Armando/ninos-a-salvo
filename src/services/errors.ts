@@ -4,14 +4,14 @@
  */
 export class ChildNotFoundError extends Error {
   constructor(id?: string) {
-    super(id ? `Niño no encontrado: ${id}` : "Niño no encontrado");
+    super(id ? `Registro no encontrado: ${id}` : "Registro no encontrado");
     this.name = "ChildNotFoundError";
   }
 }
 
 export class ChildAlreadyDeliveredError extends Error {
   constructor() {
-    super("Este niño ya fue entregado");
+    super("Este registro ya fue entregado a su familia");
     this.name = "ChildAlreadyDeliveredError";
   }
 }

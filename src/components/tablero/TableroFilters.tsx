@@ -18,7 +18,7 @@ import {
   EDAD_FILTER_OPTIONS,
   type IdentidadFilter,
   type TableroSearchParams,
-} from "@/lib/tablero";
+} from "@/types/tablero";
 
 interface TableroFiltersProps {
   params: TableroSearchParams;
@@ -67,7 +67,7 @@ export function TableroFilters({ params, basePath }: TableroFiltersProps) {
               id="q"
               type="search"
               defaultValue={params.q ?? ""}
-              placeholder="Nombre del niño, padre, madre o familiar..."
+              placeholder="Nombre, padre, madre o familiar..."
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -99,25 +99,11 @@ export function TableroFilters({ params, basePath }: TableroFiltersProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end">
-            <Button
-              type="button"
-              className="w-full"
-              disabled={isPending}
-              onClick={() => {
-                const q =
-                  (document.getElementById("q") as HTMLInputElement)?.value ??
-                  "";
-                apply({ q });
-              }}
-            >
-              {isPending ? "Buscando..." : "Filtrar"}
-            </Button>
-          </div>
+          
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Identidad registrada</Label>
             <Select
               value={identidad}
@@ -132,7 +118,7 @@ export function TableroFilters({ params, basePath }: TableroFiltersProps) {
                 <SelectItem value="sin_nombre">Sin nombre</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label>Estado</Label>
             <Select
@@ -182,6 +168,22 @@ export function TableroFilters({ params, basePath }: TableroFiltersProps) {
             </Select>
           </div>
         </div>
+
+        <div className="flex items-end">
+            <Button
+              type="button"
+              className="w-full"
+              disabled={isPending}
+              onClick={() => {
+                const q =
+                  (document.getElementById("q") as HTMLInputElement)?.value ??
+                  "";
+                apply({ q });
+              }}
+            >
+              {isPending ? "Buscando..." : "Filtrar"}
+            </Button>
+          </div>
 
         {hasFilters && (
           <Button variant="link" className="h-auto p-0" asChild>

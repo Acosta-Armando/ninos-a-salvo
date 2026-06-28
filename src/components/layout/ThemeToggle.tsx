@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { setThemeCookie } from "@/components/ThemeProvider";
+import { setThemeCookie } from "@/components/layout/ThemeProvider";
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();

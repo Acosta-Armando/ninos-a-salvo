@@ -3,19 +3,24 @@
  * Páginas servidor y rutas API deben usar estas funciones, no prisma directamente.
  */
 import type { Child, EstadoVital } from "../../generated/client";
+import {
+  decryptPublicChildCard,
+  decryptPublicChildDetail,
+  encryptChildStringsForStorage,
+} from "@/lib/childCrypto";
 import { prisma } from "@/lib/prisma";
 import {
   PUBLIC_CHILD_CARD_SELECT,
   PUBLIC_CHILD_DETAIL_SELECT,
-  type PublicChildCard,
-  type PublicChildDetail,
 } from "@/lib/publicChild";
 import {
   PAGE_SIZE,
   buildTableroWhere,
-  type TableroSearchParams,
 } from "@/lib/tablero";
-import type { ChildPayload, RetiroPayload } from "@/lib/types";
+import type { TableroSearchParams } from "@/types/tablero";
+import type { PublicChildCard, PublicChildDetail } from "@/types/public-child";
+import type { ChildPayload, RetiroPayload } from "@/types/child";
+import { normalizeChildPhotoFields } from "@/lib/storageUrl";
 import {
   ChildAlreadyDeliveredError,
   ChildNotFoundError,
@@ -25,7 +30,7 @@ import {
 
 /** Mapea el payload de sync/API al shape de Prisma (create/update). */
 function childPayloadToData(body: ChildPayload) {
-  return {
+  const normalized = normalizeChildPhotoFields({
     fullname: body.fullname,
     edad_estimada: body.edad_estimada,
     edad_anios: body.edad_anios,
@@ -37,7 +42,6 @@ function childPayloadToData(body: ChildPayload) {
     ciudad: body.ciudad,
     estado_resguardo: body.estado_resguardo,
     detalles_ubicacion: body.detalles_ubicacion,
-    foto_url: body.foto_url,
     informante_nombre: body.informante_nombre,
     informante_telefono: body.informante_telefono,
     estado_vital: body.estado_vital,
@@ -48,7 +52,9 @@ function childPayloadToData(body: ChildPayload) {
     retiro_foto_cedula_url: body.retiro_foto_cedula_url,
     retiro_foto_persona_url: body.retiro_foto_persona_url,
     retiro_foto_parentesco_url: body.retiro_foto_parentesco_url,
-  };
+  });
+
+  return encryptChildStringsForStorage(normalized);
 }
 
 /** Valida campos mínimos antes de upsert desde /api/ninos. */
@@ -110,7 +116,10 @@ export async function listTableroChildren(options: {
       prisma.child.count({ where }),
     ]);
 
-    return { children, total };
+    return {
+      children: children.map(decryptPublicChildCard),
+      total,
+    };
   } catch {
     // Si la BD no está disponible, el tablero muestra vacío en lugar de error 500.
     return { children: [], total: 0 };
@@ -121,10 +130,13 @@ export async function listTableroChildren(options: {
 export async function getPublicChildById(
   id: string,
 ): Promise<PublicChildDetail | null> {
-  return prisma.child.findUnique({
+  const child = await prisma.child.findUnique({
     where: { id },
     select: PUBLIC_CHILD_DETAIL_SELECT,
   });
+
+  if (!child) return null;
+  return decryptPublicChildDetail(child);
 }
 
 /** Crea o actualiza un niño (idempotente por UUID del cliente). */
@@ -168,9 +180,8 @@ export async function registerChildRetiro(
     throw new ChildAlreadyDeliveredError();
   }
 
-  return prisma.child.update({
-    where: { id },
-    data: {
+  const encrypted = encryptChildStringsForStorage(
+    normalizeChildPhotoFields({
       retiro_cedula: body.retiro_cedula.trim(),
       retiro_fullname: body.retiro_fullname.trim(),
       retiro_parentesco: body.retiro_parentesco.trim(),
@@ -178,6 +189,13 @@ export async function registerChildRetiro(
       retiro_foto_cedula_url: body.retiro_foto_cedula_url,
       retiro_foto_persona_url: body.retiro_foto_persona_url,
       retiro_foto_parentesco_url: body.retiro_foto_parentesco_url,
+    }),
+  );
+
+  return prisma.child.update({
+    where: { id },
+    data: {
+      ...encrypted,
       status: "Reencontrado",
     },
   });

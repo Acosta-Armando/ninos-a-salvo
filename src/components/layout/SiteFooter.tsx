@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { OnlineOnlyLink } from "@/components/OnlineOnlyNav";
 import { GitBranch, Mail, UserPlus } from "lucide-react";
-import { PwaInstallBanner } from "@/components/PwaInstallBanner";
+import { OnlineOnlyLink } from "@/components/offline/OnlineOnlyNav";
+import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { SITE } from "@/lib/site";
 
 export function SiteFooter() {

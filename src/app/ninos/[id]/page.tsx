@@ -1,11 +1,12 @@
 import Image from "next/image";
-import { Phone } from "lucide-react";
+import { Phone, Shield } from "lucide-react";
 import { notFound } from "next/navigation";
-import { AppHeader } from "@/components/AppHeader";
-import { SinFotoPlaceholder } from "@/components/SinFotoPlaceholder";
-import { RetiroForm } from "@/components/RetiroForm";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { EntregaSeguraNotice } from "@/components/shared/EntregaSeguraNotice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatEdadEstimada } from "@/lib/edad";
+import { resolveImageSrc } from "@/lib/storageUrl";
 import { getPublicChildById } from "@/services";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ interface PageProps {
 }
 
 export async function generateMetadata() {
-  return { title: "Ficha del niño — Niños a Salvo" };
+  return { title: "Ficha — Niños a Salvo" };
 }
 
 export default async function NinoDetailPage({ params }: PageProps) {
@@ -31,7 +32,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-full bg-background">
       <AppHeader
-        title="Ficha del niño"
+        title="Ficha pública"
         subtitle={esFallecido ? "Registro de identificación" : "En punto de resguardo"}
         backHref={backHref}
         backLabel={esFallecido ? "← Fallecidos" : "← Tablero"}
@@ -42,7 +43,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
           <Card className="border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40">
             <CardHeader>
               <CardTitle className="text-green-800 dark:text-green-200">
-                Niño entregado a su familia
+                Reencuentro familiar
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -82,7 +83,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
                       <p className="mb-1 text-xs text-muted-foreground">Cédula</p>
                       <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
                         <Image
-                          src={child.retiro_foto_cedula_url}
+                          src={resolveImageSrc(child.retiro_foto_cedula_url)}
                           alt="Cédula de quien retira"
                           fill
                           className="object-contain"
@@ -96,7 +97,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
                       <p className="mb-1 text-xs text-muted-foreground">Persona</p>
                       <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
                         <Image
-                          src={child.retiro_foto_persona_url}
+                          src={resolveImageSrc(child.retiro_foto_persona_url)}
                           alt="Persona que retira"
                           fill
                           className="object-contain"
@@ -110,7 +111,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
                       <p className="mb-1 text-xs text-muted-foreground">Parentesco</p>
                       <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
                         <Image
-                          src={child.retiro_foto_parentesco_url}
+                          src={resolveImageSrc(child.retiro_foto_parentesco_url)}
                           alt="Documento de parentesco"
                           fill
                           className="object-contain"
@@ -125,32 +126,28 @@ export default async function NinoDetailPage({ params }: PageProps) {
           </Card>
         ) : null}
 
-        <Card className="overflow-hidden pt-0">
-          <div
-            className={`relative aspect-[4/3] w-full ${esFallecido ? "bg-black" : "bg-muted"}`}
-            aria-label={esFallecido ? "Sin foto" : undefined}
-          >
-            {esFallecido ? (
-              <SinFotoPlaceholder textClassName="text-base sm:text-lg" />
-            ) : (
-              <Image
-                src={child.foto_url ?? "/favicon.ico"}
-                alt="Niño en resguardo"
-                fill
-                sizes="(max-width: 768px) 100vw, 672px"
-                className="object-cover"
-                priority
-              />
-            )}
-          </div>
-          <CardContent className="space-y-3 pt-4">
-            <p className="text-lg font-semibold">{child.edad_estimada}</p>
-            {child.rasgos_particulares && (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">Rasgos: </span>
+        <Card>
+          <CardHeader>
+            <CardTitle>Descripción</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-lg font-semibold">
+              {formatEdadEstimada(child.edad_estimada, child.edad_anios)}
+            </p>
+            {child.rasgos_particulares ? (
+              <p className="text-sm leading-relaxed">
+                <span className="font-medium">Rasgos: </span>
                 {child.rasgos_particulares}
               </p>
-            )}
+            ) : null}
+            <div className="flex gap-2 rounded-lg border border-amber-200/80 bg-amber-50/80 p-3 text-xs leading-relaxed text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+              <Shield className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <p>
+                Por protección de niños, niñas y adolescentes (LOPNNA), no publicamos fotografías en
+                internet. Para verificar identidad, llama o acude al punto de
+                resguardo.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -184,7 +181,7 @@ export default async function NinoDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Persona que registró o tiene al niño en resguardo:
+              Persona que registró o tiene al niño, niña o adolescente en resguardo:
             </p>
             <p className="font-medium">{child.informante_nombre}</p>
             <Button asChild size="lg" className="w-full gap-2">
@@ -193,19 +190,18 @@ export default async function NinoDetailPage({ params }: PageProps) {
                 Llamar {child.informante_telefono}
               </a>
             </Button>
+            {!esFallecido && !isReencontrado ? (
+              <p className="border-t py-3 text-xs leading-relaxed text-muted-foreground">
+                Este contacto sirve para ubicar al niño, niña o adolescente y coordinar un posible
+                reencuentro. No solicites ni autorices la entrega sin
+                verificar familiar directo y sin el respaldo de una organización
+                u órgano público.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
 
-        {/* {!isReencontrado && !esFallecido && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Registrar retiro</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RetiroForm childId={child.id} />
-            </CardContent>
-          </Card>
-        )} */}
+        {!esFallecido && !isReencontrado ? <EntregaSeguraNotice /> : null}
       </main>
     </div>
   );

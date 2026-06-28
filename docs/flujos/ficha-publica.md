@@ -1,36 +1,29 @@
-# Flujo: Ficha pública del niño
+# Flujo: Ficha pública
 
 **Ruta:** `/ninos/[id]`  
+**Componentes:** `components/shared/EntregaSeguraNotice`, `components/layout/AppHeader`  
 **Servicio:** `getPublicChildById`
 
 ## Acceso
 
-Desde una tarjeta del tablero o fallecidos. Requiere conexión (datos en servidor). Sin red, los enlaces están deshabilitados con aviso (ver [Conexión y offline](./conexion-y-offline.md)).
+Desde una tarjeta del tablero o fallecidos. Requiere conexión.
 
 ## Información mostrada
 
-| Sección | Con vida | Fallecido |
-|---------|----------|-----------|
-| Foto | Imagen del niño (o favicon si falta URL) | Recuadro negro con texto «Sin foto» en diagonal |
-| Edad | `edad_estimada` | Igual |
-| Rasgos | `rasgos_particulares` (obligatorio al registrar) | Igual |
-| Ubicación | Estado, municipio, resguardo, descripción | Igual |
-| Contacto | Informante + botón llamar | Igual |
+| Sección | Contenido |
+|---------|-----------|
+| Descripción | Edad + rasgos particulares |
+| Aviso LOPNNA | Sin fotografías de menores en internet |
+| Ubicación | Estado, municipio, resguardo, descripción |
+| Contacto | Informante + botón llamar |
+| Entrega segura | `EntregaSeguraNotice` (con vida en búsqueda) |
 
 ## Si ya fue entregado (`Reencontrado`)
 
-Banner verde con datos de quien retiró y las tres fotos del retiro. Ver [Retiro seguro](./retiro-seguro.md).
-
-## Si es fallecido
-
-- Sin formulario de retiro.
-- Botón volver → `/fallecidos`.
-- Sin fotografía del niño en la UI pública.
-
-## Si está en búsqueda y con vida
-
-La ficha muestra los datos anteriores. El componente `RetiroForm` existe en el proyecto para el flujo de retiro; su visibilidad en la página depende de la implementación actual en `ninos/[id]/page.tsx`.
+Banner verde con datos de quien retiró. Ver [Retiro seguro](./retiro-seguro.md).
 
 ## Datos excluidos
 
-`getPublicChildById` usa `PUBLIC_CHILD_DETAIL_SELECT`: no devuelve `fullname`, `nombre_padre`, `nombre_madre` ni `nombre_familiar_buscado`.
+`PUBLIC_CHILD_DETAIL_SELECT` en `lib/publicChild.ts`: no devuelve nombres de la persona registrada ni familiares.
+
+Tipos: `types/public-child.ts`.

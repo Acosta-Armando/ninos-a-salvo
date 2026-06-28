@@ -4,18 +4,18 @@ import type { Prisma } from "../../generated/client";
 export const PUBLIC_CHILD_CARD_SELECT = {
   id: true,
   edad_estimada: true,
+  edad_anios: true,
+  rasgos_particulares: true,
   estado: true,
   ciudad: true,
   estado_resguardo: true,
   detalles_ubicacion: true,
   informante_telefono: true,
-  foto_url: true,
 } satisfies Prisma.ChildSelect;
 
 /** Ficha pública del niño: permite buscar por nombre, pero no lo expone en la UI. */
 export const PUBLIC_CHILD_DETAIL_SELECT = {
   ...PUBLIC_CHILD_CARD_SELECT,
-  rasgos_particulares: true,
   informante_nombre: true,
   status: true,
   estado_vital: true,
@@ -27,11 +27,3 @@ export const PUBLIC_CHILD_DETAIL_SELECT = {
   retiro_foto_persona_url: true,
   retiro_foto_parentesco_url: true,
 } satisfies Prisma.ChildSelect;
-
-export type PublicChildCard = Prisma.ChildGetPayload<{
-  select: typeof PUBLIC_CHILD_CARD_SELECT;
-}>;
-
-export type PublicChildDetail = Prisma.ChildGetPayload<{
-  select: typeof PUBLIC_CHILD_DETAIL_SELECT;
-}>;

@@ -1,5 +1,5 @@
 import Dexie, { type Table } from "dexie";
-import type { LocalChild } from "./types";
+import type { LocalChild } from "@/types/child";
 
 /**
  * Base de datos local (IndexedDB) para registro offline.
@@ -17,6 +17,11 @@ export class NinosDB extends Dexie {
     });
     // v3: índices para estado_vital, edad y ubicación
     this.version(3).stores({
+      children:
+        "id, sync_status, status, estado_vital, created_at, edad_anios, estado, ciudad, estado_resguardo",
+    });
+    // v4: sin fotos del niño en IndexedDB
+    this.version(4).stores({
       children:
         "id, sync_status, status, estado_vital, created_at, edad_anios, estado, ciudad, estado_resguardo",
     });

@@ -79,7 +79,7 @@ export function ConnectionStatusBar() {
         ) : (
           <>
             <WifiOff className="size-3.5 shrink-0" />
-            Sin conexión — modo offline (puedes registrar niños)
+            Sin conexión — modo offline (puedes registrar)
           </>
         )}
       </span>

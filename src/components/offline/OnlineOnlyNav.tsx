@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { requiresConnection } from "@/lib/offlineRoutes";
 import { cn } from "@/lib/utils";
-import { useOfflineNav } from "@/components/OfflineNavProvider";
+import { useOfflineNav } from "@/components/offline/OfflineNavProvider";
 
 type OnlineOnlyButtonProps = ComponentProps<typeof Button> & {
   href: string;

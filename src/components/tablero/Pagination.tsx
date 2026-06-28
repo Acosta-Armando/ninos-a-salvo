@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import type { TableroSearchParams } from "@/lib/tablero";
+import type { TableroSearchParams } from "@/types/tablero";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { requiresConnection } from "@/lib/offlineRoutes";
 import { cn } from "@/lib/utils";
-import { useOfflineNav } from "@/components/OfflineNavProvider";
+import { useOfflineNav } from "@/components/offline/OfflineNavProvider";
 
 interface PaginationProps {
   currentPage: number;

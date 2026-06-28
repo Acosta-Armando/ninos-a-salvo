@@ -1,8 +1,9 @@
 # Flujo: Conexión, rutas offline y navegación
 
-**Componentes:** `ConnectionStatusBar`, `PendingSyncBar`, `OfflineNavProvider`, `OnlineOnlyNav`, `OfflinePrecache`  
+**Componentes:** `components/offline/*`  
+**Layout:** `components/layout/*`  
 **Utilidad:** `src/lib/offlineRoutes.ts`  
-**Service worker:** `public/sw.js` (v3)
+**Service worker:** `public/sw.js` (v4)
 
 ## Rutas disponibles sin internet
 
@@ -15,43 +16,31 @@ Definidas en `OFFLINE_ROUTES` (deben coincidir con `OFFLINE_PATHS` en `sw.js`):
 
 Todas las demás rutas requieren conexión: `/tablero`, `/fallecidos`, `/ninos/[id]`, APIs.
 
-El service worker precachea `/`, `/registro`, assets estáticos y hace fallback por pathname para esas rutas.
+El service worker precachea `/` y `/registro`. Los chunks `/_next/` usan **red primero** para evitar bundles obsoletos.
 
 ## Barra de estado de conexión
 
-`ConnectionStatusBar` (parte superior, sticky):
+`components/offline/ConnectionStatusBar`:
 
 | Evento | Comportamiento |
 |--------|----------------|
-| Pérdida de red (`offline`) | Barra ámbar permanente: «Sin conexión — modo offline» |
-| Recuperación de red (`online`) | Barra verde 3 segundos: «Con conexión — modo en línea» |
-| Navegación entre rutas | **No** muestra la barra (solo reacciona a cambios reales de red) |
+| Pérdida de red | Barra ámbar permanente |
+| Recuperación de red | Barra verde 3 segundos |
+| Navegación entre rutas | No reacciona (solo cambios reales de red) |
 
-## Registros pendientes de sincronizar
+## Registros pendientes
 
-`PendingSyncBar` aparece **debajo** de la barra de conexión cuando:
-
-- No hay internet, **y**
-- Existe al menos un registro en Dexie con `sync_status = pending`
-
-Muestra el contador (p. ej. «2 registros sin sincronizar — se enviarán al recuperar internet»). Usa `usePendingSyncCount` con `liveQuery` de Dexie.
+`components/offline/PendingSyncBar` + hook `usePendingSyncCount`.
 
 ## Navegación bloqueada sin conexión
 
-`OfflineNavProvider` + `OnlineOnlyButton` / `OnlineOnlyLink`:
+`components/offline/OfflineNavProvider` + `OnlineOnlyButton` / `OnlineOnlyLink`.
 
-- Enlaces y botones hacia rutas que requieren servidor se ven atenuados sin red.
-- Al pulsarlos, un diálogo indica que hay que reconectar internet.
-- Rutas `/` y `/registro` siguen accesibles.
+Aplica en: landing, pie de página, pestañas tablero/fallecidos, `tablero/ChildCard`, `tablero/Pagination`.
 
-Aplica en: landing, pie de página, pestañas tablero/fallecidos, tarjetas `ChildCard`, paginación.
+## Precache y sync
 
-## Precache en cliente
+- `components/offline/OfflinePrecache`: registra SW y precarga rutas offline.
+- `components/offline/SyncProvider`: sincroniza Dexie → API al recuperar red.
 
-`OfflinePrecache` (en `layout.tsx`): al iniciar con red, registra el SW y precarga rutas offline para que `/registro` abra sin depender de la primera visita con conexión.
-
-## Sincronización global
-
-`SyncProvider` está en el **layout raíz** (no solo en `/registro`). Al evento `online` y al montar la app con red, ejecuta `triggerSync()` para subir fotos pendientes y enviar registros a la API.
-
-Ver detalle del registro en [Registro y sincronización](./registro-y-sincronizacion.md).
+Ver [Registro y sincronización](./registro-y-sincronizacion.md).

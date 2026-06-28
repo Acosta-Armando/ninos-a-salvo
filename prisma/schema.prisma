@@ -30,7 +30,6 @@ model Child {
   ciudad                  String
   estado_resguardo        String
   detalles_ubicacion      String      @db.Text
-  foto_url                String?
   informante_nombre       String
   informante_telefono     String
   status                  ChildStatus @default(Buscando)
@@ -45,6 +44,11 @@ model Child {
   retiro_foto_cedula_url     String?
   retiro_foto_persona_url    String?
   retiro_foto_parentesco_url String?
+
+  /**
+   * Tokens HMAC para búsqueda por nombre sin indexar texto en claro.
+   */
+  identity_search_tokens String[] @default([])
 
   @@index([status])
   @@index([estado_vital])

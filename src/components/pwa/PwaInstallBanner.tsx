@@ -1,7 +1,7 @@
 "use client";
 import { Smartphone } from "lucide-react";
-import { PwaInstallButton } from "@/components/PwaInstallButton";
-import { usePwaInstall } from "@/components/PwaInstallProvider";
+import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
+import { usePwaInstall } from "@/components/pwa/PwaInstallProvider";
 
 /** Bloque del footer: siempre visible. Instala la PWA o abre la app si ya está instalada. */
 export function PwaInstallBanner() {
@@ -22,8 +22,8 @@ export function PwaInstallBanner() {
             </h2>
             <p className="max-w-xl text-sm text-muted-foreground">
               {ready && installed
-                ? "La app está instalada. Ábrela para registrar niños en campo, incluso con poca señal."
-                : "Acceso rápido desde la pantalla de inicio. Ideal para registrar niños en campo cuando la conexión es limitada."}
+                ? "La app está instalada. Ábrela para registrar en campo, incluso con poca señal."
+                : "Acceso rápido desde la pantalla de inicio. Ideal para registrar en campo cuando la conexión es limitada."}
             </p>
           </div>
         </div>
