@@ -1,17 +1,18 @@
 /**
- * Service worker — offline para / y /registro.
+ * Service worker — offline para /, /registro y /ayuda.
  * El registro guarda datos en IndexedDB (Dexie); la sync a /api/ninos requiere red.
  */
-const CACHE_VERSION = 'v4'
+const CACHE_VERSION = 'v5'
 const SHELL_CACHE = `ninos-a-salvo-shell-${CACHE_VERSION}`
 const RUNTIME_CACHE = `ninos-a-salvo-runtime-${CACHE_VERSION}`
 
 /** Rutas que deben abrirse sin conexión. */
-const OFFLINE_PATHS = new Set(['/', '/registro'])
+const OFFLINE_PATHS = new Set(['/', '/registro', '/ayuda'])
 
 const PRECACHE_URLS = [
   '/',
   '/registro',
+  '/ayuda',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

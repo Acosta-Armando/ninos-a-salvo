@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { GitBranch, Mail, UserPlus } from "lucide-react";
 import { OnlineOnlyLink } from "@/components/offline/OnlineOnlyNav";
-import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { SITE } from "@/lib/site";
 
 export function SiteFooter() {
@@ -10,8 +9,6 @@ export function SiteFooter() {
   return (
     <footer className="mt-auto border-t bg-muted/30">
       <div className="mx-auto max-w-6xl space-y-10 px-4 py-10">
-        <PwaInstallBanner />
-
         {/* Colaborar */}
         <section className="grid gap-8 sm:grid-cols-2">
           <div className="space-y-3">
@@ -86,6 +83,10 @@ export function SiteFooter() {
             {" · "}
             <Link href="/registro" className="hover:text-foreground hover:underline">
               Registrar
+            </Link>
+            {" · "}
+            <Link href="/ayuda" className="hover:text-foreground hover:underline">
+              Ayuda
             </Link>
           </p>
         </div>

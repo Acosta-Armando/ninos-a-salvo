@@ -3,6 +3,7 @@ import { Heart, MapPin, Phone, Search, Shield, Users, WifiOff } from 'lucide-rea
 import { AppHeader } from '@/components/layout/AppHeader'
 import { EntregaSeguraNotice } from '@/components/shared/EntregaSeguraNotice'
 import { OnlineOnlyButton, OnlineOnlyLink } from '@/components/offline/OnlineOnlyNav'
+import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -23,8 +24,8 @@ export default function HomePage() {
           </div>
           <h2 className='text-3xl font-bold tracking-tight sm:text-4xl'>Reencuentro familiar tras la emergencia</h2>
           <p className='text-lg text-muted-foreground'>
-            Niños a Salvo conecta a familias con niños, niñas y adolescentes en puntos de resguardo después del doblete sísmico en Venezuela.
-            Sin registro previo, sin contraseñas: solo ayuda rápida cuando más importa.
+            Niños a Salvo conecta a familias con niños, niñas y adolescentes en puntos de resguardo después del doblete
+            sísmico en Venezuela. Sin registro previo, sin contraseñas: solo ayuda rápida cuando más importa.
           </p>
           <div className='flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center'>
             <OnlineOnlyButton href='/tablero' size='lg'>
@@ -34,6 +35,7 @@ export default function HomePage() {
               <Link href='/registro'>Registrar</Link>
             </Button>
           </div>
+          <PwaInstallBanner />
         </section>
 
         <section className='grid gap-4 sm:grid-cols-2'>
@@ -43,8 +45,8 @@ export default function HomePage() {
               <CardTitle className='text-base'>Buscar a un familiar</CardTitle>
             </CardHeader>
             <CardContent className='text-sm text-muted-foreground'>
-              Explora el tablero por ubicación, edad estimada o nombre (la búsqueda es privada; en público se
-              muestran rasgos y el lugar de resguardo, sin fotografías). Llama al teléfono del informante en cada ficha.
+              Explora el tablero por ubicación, edad estimada o nombre (la búsqueda es privada; en público se muestran
+              rasgos y el lugar de resguardo, sin fotografías). Llama al teléfono del informante en cada ficha.
             </CardContent>
           </Card>
           <Card>
@@ -53,8 +55,8 @@ export default function HomePage() {
               <CardTitle className='text-base'>Funciona sin internet</CardTitle>
             </CardHeader>
             <CardContent className='text-sm text-muted-foreground'>
-              Los rescatistas pueden registrar niños, niñas y adolescentes en campo aunque no haya señal. Los datos se guardan en el
-              dispositivo y se sincronizan solos al recuperar conexión.
+              Los rescatistas pueden registrar niños, niñas y adolescentes en campo aunque no haya señal. Los datos se
+              guardan en el dispositivo y se sincronizan solos al recuperar conexión.
             </CardContent>
           </Card>
           <Card>
@@ -63,9 +65,9 @@ export default function HomePage() {
               <CardTitle className='text-base'>Retiro seguro</CardTitle>
             </CardHeader>
             <CardContent className='text-sm text-muted-foreground'>
-              La entrega exige confirmar parentesco y documentos, preferiblemente con el
-              acompañamiento de una organización o autoridad pública. Una vez entregado, el
-              registro queda bloqueado para evitar entregas indebidas.
+              La entrega exige confirmar parentesco y documentos, preferiblemente con el acompañamiento de una
+              organización o autoridad pública. Una vez entregado, el registro queda bloqueado para evitar entregas
+              indebidas.
             </CardContent>
           </Card>
           <Card>
@@ -74,8 +76,8 @@ export default function HomePage() {
               <CardTitle className='text-base'>Sin identificar</CardTitle>
             </CardHeader>
             <CardContent className='text-sm text-muted-foreground'>
-              Si el niño, niña o adolescente no puede hablar, se genera un código temporal y se describen rasgos visibles. El nombre se
-              guarda de forma interna pero no se publica en el tablero.
+              Si el niño, niña o adolescente no puede hablar, se genera un código temporal y se describen rasgos
+              visibles. El nombre se guarda de forma interna pero no se publica en el tablero.
             </CardContent>
           </Card>
         </section>
@@ -88,8 +90,8 @@ export default function HomePage() {
               <Link href='/registro' className='text-primary hover:underline'>
                 Registrar
               </Link>
-              , describe sus rasgos, indica ubicación (estado, municipio y descripción del sitio) y deja tu teléfono para que
-              las familias te contacten.
+              , describe sus rasgos, indica ubicación (estado, municipio y descripción del sitio) y deja tu teléfono
+              para que las familias te contacten.
             </li>
             <li>
               <strong className='text-foreground'>Si buscas a un familiar:</strong> revisa el{' '}
@@ -99,8 +101,8 @@ export default function HomePage() {
               y filtra por zona o edad. Toca una tarjeta para ver detalles y el número de contacto.
             </li>
             <li>
-              <strong className='text-foreground'>Si localizas a un niño, niña o adolescente fallecido:</strong> regístralo marcando la
-              condición correspondiente. Aparecerá en la{' '}
+              <strong className='text-foreground'>Si localizas a un niño, niña o adolescente fallecido:</strong>{' '}
+              regístralo marcando la condición correspondiente. Aparecerá en la{' '}
               <OnlineOnlyLink href='/fallecidos' className='text-primary hover:underline'>
                 lista de fallecidos
               </OnlineOnlyLink>{' '}
@@ -125,8 +127,8 @@ export default function HomePage() {
             <div>
               <p className='font-medium'>Contacto directo</p>
               <p className='mt-1 text-sm text-muted-foreground'>
-                Cada registro muestra el teléfono de quien tiene al niño, niña o adolescente en resguardo. Llama para pedir información o
-                coordinar el reencuentro.
+                Cada registro muestra el teléfono de quien tiene al niño, niña o adolescente en resguardo. Llama para
+                pedir información o coordinar el reencuentro.
               </p>
             </div>
           </div>

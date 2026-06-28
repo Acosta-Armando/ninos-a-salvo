@@ -25,7 +25,7 @@ async function registerServiceWorker() {
   return registration;
 }
 
-/** Al iniciar (con red), precarga / y /registro en caché del service worker. */
+/** Al iniciar (con red), precarga rutas offline en caché del service worker. */
 export function OfflinePrecache() {
   const router = useRouter();
 

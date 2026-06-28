@@ -1,5 +1,5 @@
 /** Rutas que deben funcionar sin internet (deben coincidir con public/sw.js). */
-export const OFFLINE_ROUTES = ["/", "/registro"] as const;
+export const OFFLINE_ROUTES = ["/", "/registro", "/ayuda"] as const;
 
 function normalizePath(pathname: string): string {
   const path = pathname.replace(/\/$/, "");
