@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
-import { ConnectionStatusBar } from "@/components/offline/ConnectionStatusBar";
-import { PendingSyncBar } from "@/components/offline/PendingSyncBar";
+import { OfflineStatusBars } from "@/components/offline/OfflineStatusBars";
 import { OfflineNavProvider } from "@/components/offline/OfflineNavProvider";
 import { OfflinePrecache } from "@/components/offline/OfflinePrecache";
 import { SyncProvider } from "@/components/offline/SyncProvider";
@@ -62,10 +61,7 @@ export default async function RootLayout({
           <PwaInstallProvider>
             <SyncProvider>
               <OfflineNavProvider>
-              <div className="sticky top-0 z-50">
-                <ConnectionStatusBar />
-                <PendingSyncBar />
-              </div>
+              <OfflineStatusBars />
               <OfflinePrecache />
               <div className="flex min-h-full flex-1 flex-col">{children}</div>
               <SiteFooter />

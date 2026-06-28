@@ -64,7 +64,7 @@ export function ConnectionStatusBar() {
     <div
       role="status"
       aria-live="polite"
-      className={`sticky top-0 z-50 w-full border-b px-3 py-1.5 text-center text-xs font-medium backdrop-blur-sm ${
+      className={`w-full border-b px-3 py-1.5 text-center text-xs font-medium backdrop-blur-sm ${
         online
           ? "border-green-500/30 bg-green-600/90 text-white"
           : "border-amber-500/40 bg-amber-600/95 text-white"
